@@ -6,12 +6,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginValues } from "@/lib/auth-schemas";
-import { signIn } from "@/lib/auth-client";
+import { authClient, signIn } from "@/lib/auth-client";
+import { homeForRole } from "@/lib/roles";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextPath = searchParams.get("next") || "/dashboard";
+  const nextPath = searchParams.get("next");
   const [formError, setFormError] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -24,12 +25,18 @@ export function LoginForm() {
     defaultValues: { email: "", password: "" },
   });
 
+  const resolveHome = async () => {
+    if (nextPath) return nextPath;
+    const session = await authClient.getSession();
+    const role = (session.data?.user as { role?: string } | undefined)?.role;
+    return homeForRole(role);
+  };
+
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
     const { error } = await signIn.email({
       email: values.email,
       password: values.password,
-      callbackURL: nextPath,
     });
 
     if (error) {
@@ -37,16 +44,18 @@ export function LoginForm() {
       return;
     }
 
-    router.push(nextPath);
+    const home = await resolveHome();
+    router.push(home);
     router.refresh();
   });
 
   const onGoogle = async () => {
     setFormError(null);
     setGoogleLoading(true);
+    const home = nextPath || "/customer";
     const { error } = await signIn.social({
       provider: "google",
-      callbackURL: nextPath,
+      callbackURL: home,
     });
     if (error) {
       setFormError(

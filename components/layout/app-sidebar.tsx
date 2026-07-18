@@ -14,28 +14,39 @@ import {
   Users,
   BarChart3,
   Sparkles,
+  Shield,
+  MessageSquare,
 } from "lucide-react";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useThemeStore } from "@/store/theme-store";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import clsx from "clsx";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/properties", label: "Properties", icon: Building2 },
-  { href: "/leads", label: "Leads", icon: Users },
-  { href: "/pipeline", label: "Pipeline", icon: KanbanSquare },
-  { href: "/visits", label: "Visits", icon: CalendarDays },
-  { href: "/reports", label: "Reports", icon: BarChart3 },
-  { href: "/notifications", label: "Notifications", icon: Bell },
-  { href: "/ai", label: "AI Studio", icon: Sparkles },
-];
+import { getRole } from "@/lib/roles";
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
   const { theme, toggleTheme, hydrate } = useThemeStore();
+  const role = getRole(session?.user as { role?: string });
+
+  const navItems = useMemo(() => {
+    const items = [
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/properties", label: "Properties", icon: Building2 },
+      { href: "/leads", label: "Leads", icon: Users },
+      { href: "/pipeline", label: "Pipeline", icon: KanbanSquare },
+      { href: "/visits", label: "Visits", icon: CalendarDays },
+      { href: "/reports", label: "Reports", icon: BarChart3 },
+      { href: "/notifications", label: "Notifications", icon: Bell },
+      { href: "/ai", label: "AI Studio", icon: Sparkles },
+    ];
+    if (role === "admin") {
+      items.push({ href: "/admin", label: "Admin", icon: Shield });
+    }
+    items.push({ href: "/customer/messages", label: "Messages", icon: MessageSquare });
+    return items;
+  }, [role]);
 
   useEffect(() => {
     hydrate();

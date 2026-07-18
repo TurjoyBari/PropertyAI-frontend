@@ -69,6 +69,34 @@ const nextConfig: NextConfig = {
         source: "/api/ai/:path*",
         destination: `${apiUrl}/api/ai/:path*`,
       },
+      {
+        source: "/api/public",
+        destination: `${apiUrl}/api/public`,
+      },
+      {
+        source: "/api/public/:path*",
+        destination: `${apiUrl}/api/public/:path*`,
+      },
+      {
+        source: "/api/favorites",
+        destination: `${apiUrl}/api/favorites`,
+      },
+      {
+        source: "/api/favorites/:path*",
+        destination: `${apiUrl}/api/favorites/:path*`,
+      },
+      {
+        source: "/api/messages",
+        destination: `${apiUrl}/api/messages`,
+      },
+      {
+        source: "/api/messages/:path*",
+        destination: `${apiUrl}/api/messages/:path*`,
+      },
+      {
+        source: "/api/admin/:path*",
+        destination: `${apiUrl}/api/admin/:path*`,
+      },
     ];
   },
 };

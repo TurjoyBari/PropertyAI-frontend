@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterValues } from "@/lib/auth-schemas";
-import { signIn, signUp } from "@/lib/auth-client";
+import { authClient, signIn, signUp } from "@/lib/auth-client";
+import { homeForRole } from "@/lib/roles";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export function RegisterForm() {
       name: values.name,
       email: values.email,
       password: values.password,
-      callbackURL: "/dashboard",
+      callbackURL: "/customer",
     });
 
     if (error) {
@@ -41,13 +42,14 @@ export function RegisterForm() {
       return;
     }
 
-    // Ensure session cookie is established, then enter the app.
     await signIn.email({
       email: values.email,
       password: values.password,
     });
 
-    router.push("/dashboard");
+    const session = await authClient.getSession();
+    const role = (session.data?.user as { role?: string } | undefined)?.role;
+    router.push(homeForRole(role));
     router.refresh();
   });
 
