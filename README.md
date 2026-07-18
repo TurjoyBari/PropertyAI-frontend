@@ -4,10 +4,10 @@ Next.js 15 frontend for **PropertyAI** — Real Estate AI Management System.
 
 ## Stack
 
-- Next.js 15 (App Router)
-- React 19
-- TypeScript
+- Next.js 15 (App Router) + React 19 + TypeScript
 - Tailwind CSS
+- Better Auth client
+- React Hook Form + Zod
 
 ## Getting Started
 
@@ -19,7 +19,19 @@ npm run dev
 
 App: http://localhost:3000
 
-API base URL (backend): set `NEXT_PUBLIC_API_URL` in `.env.local` (default `http://localhost:4000`).
+Make sure the backend is also running (`PropertyAI-backend` → `npm run dev` on port 4000).
+
+Auth requests go to same-origin `/api/auth/*` and are rewritten to the NestJS API.
+
+## Auth pages
+
+| Route | Purpose |
+|---|---|
+| `/login` | Email/password + Google button |
+| `/register` | Create account |
+| `/forgot-password` | Request reset link |
+| `/reset-password?token=...` | Set new password |
+| `/dashboard` | Protected placeholder |
 
 ## Related
 

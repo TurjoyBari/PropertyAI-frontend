@@ -1,30 +1,32 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-50 px-6 dark:bg-zinc-950">
-      <div className="max-w-xl text-center">
-        <p className="mb-3 text-sm font-medium tracking-wide text-zinc-500 dark:text-zinc-400">
-          Milestone 1 — Foundation Ready
-        </p>
-        <h1 className="text-4xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-6">
+      <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_0%,color-mix(in_oklab,var(--accent)_12%,transparent)_45%,transparent_100%)]" />
+      <div className="relative max-w-2xl text-center">
+        <p className="text-sm font-medium tracking-[0.18em] text-[var(--accent)] uppercase">
           PropertyAI
-        </h1>
-        <p className="mt-4 text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-          Frontend (Next.js) and Backend (NestJS) are set up as separate apps.
-          Authentication, dashboard, and AI features will be built step by step.
         </p>
-        <div className="mt-8 flex flex-col items-center gap-2 text-sm text-zinc-500 dark:text-zinc-500">
-          <p>
-            Frontend:{" "}
-            <span className="font-mono text-zinc-800 dark:text-zinc-200">
-              http://localhost:3000
-            </span>
-          </p>
-          <p>
-            Backend:{" "}
-            <span className="font-mono text-zinc-800 dark:text-zinc-200">
-              http://localhost:4000/health
-            </span>
-          </p>
+        <h1 className="mt-4 text-5xl font-semibold tracking-tight sm:text-6xl">
+          Real Estate AI OS
+        </h1>
+        <p className="mt-4 text-base leading-relaxed text-[var(--muted)] sm:text-lg">
+          Manage properties, leads, and AI-assisted sales from one premium workspace.
+        </p>
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href="/login"
+            className="rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/register"
+            className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-3 text-sm font-semibold transition hover:bg-[color-mix(in_oklab,var(--accent)_8%,transparent)]"
+          >
+            Create account
+          </Link>
         </div>
       </div>
     </main>
