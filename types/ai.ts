@@ -24,6 +24,7 @@ export type MatchPropertyResult = {
       address?: string;
     };
     images?: string[];
+    areaSqFt?: number;
   };
 };
 
@@ -32,7 +33,7 @@ export type MatchPropertiesResponse = {
   matches: MatchPropertyResult[];
   alternatives: MatchPropertyResult[];
   summary: string;
-  mode: "empty" | "live";
+  mode: "empty" | "live" | "fallback";
 };
 
 export type ScoreLeadResponse = {

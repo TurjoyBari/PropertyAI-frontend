@@ -6,6 +6,12 @@ export function getRole(user?: { role?: string | null } | null): AppRole {
   return "user";
 }
 
+export function roleLabel(role?: string | null) {
+  if (role === "admin") return "Admin";
+  if (role === "agent") return "Agent";
+  return "Customer";
+}
+
 export function homeForRole(role?: string | null) {
   if (role === "admin") return "/admin";
   if (role === "agent") return "/dashboard";
@@ -19,3 +25,9 @@ export function canAccessOps(role?: string | null) {
 export function canAccessAdmin(role?: string | null) {
   return role === "admin";
 }
+
+/** Customer home dashboard — not the personal favorites/visits tools. */
+export function canAccessCustomerHome(role?: string | null) {
+  return getRole({ role }) === "user";
+}
+

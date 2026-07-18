@@ -28,6 +28,7 @@ export type VisitPropertySummary = {
   price?: number;
   currency?: string;
   type?: string;
+  images?: string[];
   location?: {
     address?: string;
     city?: string;
@@ -35,11 +36,18 @@ export type VisitPropertySummary = {
   };
 };
 
+export type VisitAgentSummary = {
+  _id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+};
+
 export type Visit = {
   _id: string;
   lead: VisitLeadSummary | string;
   property: VisitPropertySummary | string;
-  assignedAgent?: string;
+  assignedAgent?: VisitAgentSummary | string;
   scheduledAt: string;
   durationMinutes: number;
   status: VisitStatus;
@@ -96,4 +104,24 @@ export function visitLeadId(visit: Visit) {
 
 export function visitPropertyId(visit: Visit) {
   return typeof visit.property === "string" ? visit.property : visit.property._id;
+}
+
+export function visitAgentName(visit: Visit) {
+  if (!visit.assignedAgent) return "Pending assignment";
+  if (typeof visit.assignedAgent === "string") return "Assigned agent";
+  return visit.assignedAgent.name || "Assigned agent";
+}
+
+export function visitAgentId(visit: Visit) {
+  if (!visit.assignedAgent) return "";
+  return typeof visit.assignedAgent === "string"
+    ? visit.assignedAgent
+    : visit.assignedAgent._id;
+}
+
+export function visitPropertyAddress(visit: Visit) {
+  if (typeof visit.property === "string") return "";
+  const loc = visit.property.location;
+  if (!loc) return "";
+  return [loc.address, loc.area, loc.city].filter(Boolean).join(", ");
 }

@@ -1,33 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Bell,
   Building2,
   CalendarDays,
   KanbanSquare,
   LayoutDashboard,
-  LogOut,
-  Moon,
-  Sun,
   Users,
   BarChart3,
   Sparkles,
   Shield,
   MessageSquare,
 } from "lucide-react";
-import { signOut, useSession } from "@/lib/auth-client";
-import { useThemeStore } from "@/store/theme-store";
-import { useEffect, useMemo } from "react";
+import { useSession } from "@/lib/auth-client";
+import { useMemo } from "react";
 import clsx from "clsx";
 import { getRole } from "@/lib/roles";
+import { SidebarFooter } from "@/components/layout/sidebar-footer";
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { data: session } = useSession();
-  const { theme, toggleTheme, hydrate } = useThemeStore();
   const role = getRole(session?.user as { role?: string });
 
   const navItems = useMemo(() => {
@@ -48,24 +43,16 @@ export function AppSidebar() {
     return items;
   }, [role]);
 
-  useEffect(() => {
-    hydrate();
-  }, [hydrate]);
-
-  const onSignOut = async () => {
-    await signOut();
-    router.push("/login");
-    router.refresh();
-  };
-
   return (
     <aside className="flex h-full w-64 flex-col border-r border-[var(--border)] bg-[var(--card)] px-4 py-5">
       <div className="px-2">
         <p className="text-lg font-semibold tracking-tight">PropertyAI</p>
-        <p className="mt-1 text-xs text-[var(--muted)]">Real Estate OS</p>
+        <p className="mt-1 text-xs text-[var(--muted)]">
+          {role === "admin" ? "Admin" : "Agent"} · Real Estate OS
+        </p>
       </div>
 
-      <nav className="mt-8 flex flex-1 flex-col gap-1">
+      <nav className="mt-8 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -87,36 +74,12 @@ export function AppSidebar() {
         })}
       </nav>
 
-      <div className="space-y-2 border-t border-[var(--border)] pt-4">
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--muted)] hover:bg-[color-mix(in_oklab,var(--accent)_8%,transparent)]"
-        >
-          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-          {theme === "dark" ? "Light mode" : "Dark mode"}
-        </button>
-
-        <div className="rounded-xl bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] px-3 py-3">
-          <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
-            <Bell size={14} />
-            Signed in
-          </div>
-          <p className="mt-1 truncate text-sm font-medium">
-            {session?.user?.name || "User"}
-          </p>
-          <p className="truncate text-xs text-[var(--muted)]">{session?.user?.email}</p>
-        </div>
-
-        <button
-          type="button"
-          onClick={onSignOut}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--muted)] hover:bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] hover:text-[var(--danger)]"
-        >
-          <LogOut size={18} />
-          Sign out
-        </button>
+      <div className="mt-4 shrink-0 rounded-xl bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] px-3 py-3">
+        <p className="truncate text-sm font-medium">{session?.user?.name || "User"}</p>
+        <p className="truncate text-xs text-[var(--muted)]">{session?.user?.email}</p>
       </div>
+
+      <SidebarFooter />
     </aside>
   );
 }

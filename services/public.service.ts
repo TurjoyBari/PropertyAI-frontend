@@ -72,6 +72,11 @@ export async function publicCreateInquiry(input: {
   return parse<{ message: string; leadId: string }>(response);
 }
 
+export async function publicListAreas() {
+  const response = await fetch("/api/public/areas", { cache: "no-store" });
+  return parse<{ items: Array<{ name: string; count: number }> }>(response);
+}
+
 export async function publicFaq() {
   const response = await fetch("/api/public/faq", { cache: "force-cache" });
   return parse<{ items: Array<{ q: string; a: string }> }>(response);

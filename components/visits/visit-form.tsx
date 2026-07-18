@@ -11,6 +11,7 @@ import {
   VISIT_STATUS_LABELS,
   type Visit,
   type VisitInput,
+  visitAgentId,
   visitLeadId,
   visitPropertyId,
 } from "@/types/visit";
@@ -58,7 +59,7 @@ export function VisitForm({
       scheduledAt: toDatetimeLocal(initial?.scheduledAt),
       durationMinutes: initial?.durationMinutes ?? 60,
       status: initial?.status ?? "scheduled",
-      assignedAgent: initial?.assignedAgent ?? "",
+      assignedAgent: initial ? visitAgentId(initial) : "",
       locationNote: initial?.locationNote ?? "",
       notes: initial?.notes ?? "",
     },

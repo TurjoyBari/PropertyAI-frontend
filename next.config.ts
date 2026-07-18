@@ -3,10 +3,11 @@ import type { NextConfig } from "next";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 const nextConfig: NextConfig = {
-  /**
-   * Proxy Better Auth through the Next.js origin so HTTP-only cookies
-   * stay first-party (localhost:3000) instead of cross-port to :4000.
-   */
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "images.unsplash.com" },
+    ],
+  },
   async rewrites() {
     return [
       {

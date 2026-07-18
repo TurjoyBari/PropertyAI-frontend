@@ -11,16 +11,21 @@ type ThemeState = {
   hydrate: () => void;
 };
 
+const STORAGE_KEY = "propertyai-theme";
+
 function applyTheme(theme: Theme) {
-  document.documentElement.dataset.theme = theme;
-  document.documentElement.style.colorScheme = theme;
+  const root = document.documentElement;
+  root.classList.add("theme-animating");
+  root.dataset.theme = theme;
+  root.style.colorScheme = theme;
+  window.setTimeout(() => root.classList.remove("theme-animating"), 350);
 }
 
 export const useThemeStore = create<ThemeState>((set, get) => ({
   theme: "light",
   setTheme: (theme) => {
     applyTheme(theme);
-    localStorage.setItem("propertyai-theme", theme);
+    localStorage.setItem(STORAGE_KEY, theme);
     set({ theme });
   },
   toggleTheme: () => {
@@ -28,11 +33,12 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
     get().setTheme(next);
   },
   hydrate: () => {
-    const saved = localStorage.getItem("propertyai-theme");
+    const saved = localStorage.getItem(STORAGE_KEY);
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const theme: Theme =
       saved === "light" || saved === "dark" ? saved : prefersDark ? "dark" : "light";
-    applyTheme(theme);
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
     set({ theme });
   },
 }));

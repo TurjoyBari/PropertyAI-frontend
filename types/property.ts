@@ -15,8 +15,11 @@ export const PROPERTY_STATUSES = [
   "rented",
 ] as const;
 
+export const PROPERTY_PURPOSES = ["sale", "rent"] as const;
+
 export type PropertyType = (typeof PROPERTY_TYPES)[number];
 export type PropertyStatus = (typeof PROPERTY_STATUSES)[number];
+export type PropertyPurpose = (typeof PROPERTY_PURPOSES)[number];
 
 export type PropertyLocation = {
   address: string;
@@ -33,6 +36,7 @@ export type Property = {
   description: string;
   type: PropertyType;
   status: PropertyStatus;
+  purpose?: PropertyPurpose;
   price: number;
   currency: string;
   bedrooms: number;
@@ -62,6 +66,7 @@ export type PropertyInput = {
   description: string;
   type: PropertyType;
   status: PropertyStatus;
+  purpose: PropertyPurpose;
   price: number;
   currency: string;
   bedrooms: number;
@@ -76,9 +81,19 @@ export type PropertyQuery = {
   search?: string;
   type?: PropertyType | "";
   status?: PropertyStatus | "";
+  purpose?: PropertyPurpose | "";
   city?: string;
+  area?: string;
   minPrice?: string;
   maxPrice?: string;
+  bedrooms?: string | number;
   page?: number;
   limit?: number;
 };
+
+/** Map public nav intent to API purpose */
+export function intentToPurpose(intent?: string | null): PropertyPurpose | undefined {
+  if (intent === "rent") return "rent";
+  if (intent === "buy" || intent === "sale") return "sale";
+  return undefined;
+}

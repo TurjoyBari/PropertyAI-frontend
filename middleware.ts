@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { canAccessAdmin, canAccessOps, homeForRole } from "@/lib/roles";
+import {
+  canAccessAdmin,
+  canAccessCustomerHome,
+  canAccessOps,
+  homeForRole,
+} from "@/lib/roles";
 
 const opsPrefixes = [
   "/dashboard",
@@ -13,7 +18,18 @@ const opsPrefixes = [
 ];
 const customerPrefixes = ["/customer"];
 const adminPrefixes = ["/admin"];
+const accountPrefixes = ["/account"];
 const authPrefixes = ["/login", "/register", "/forgot-password", "/reset-password"];
+
+/** Personal tools under /customer/* that any authenticated role may use. */
+const customerPersonalPaths = [
+  "/customer/favorites",
+  "/customer/visits",
+  "/customer/messages",
+  "/customer/notifications",
+  "/customer/settings",
+  "/customer/ai",
+];
 
 type SessionPayload = {
   user?: { id?: string; role?: string } | null;
@@ -33,14 +49,25 @@ async function getSession(request: NextRequest): Promise<SessionPayload> {
   }
 }
 
+function isCustomerPersonal(pathname: string) {
+  return customerPersonalPaths.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isOps = opsPrefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
-  const isCustomer = customerPrefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
-  const isAdmin = adminPrefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  const isOps = opsPrefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const isCustomer = customerPrefixes.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+  const isAdmin = adminPrefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const isAccount = accountPrefixes.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
   const isAuthRoute = authPrefixes.some((p) => pathname.startsWith(p));
 
-  if (!isOps && !isCustomer && !isAdmin && !isAuthRoute) {
+  if (!isOps && !isCustomer && !isAdmin && !isAuthRoute && !isAccount) {
     return NextResponse.next();
   }
 
@@ -48,22 +75,32 @@ export async function middleware(request: NextRequest) {
   const isLoggedIn = Boolean(session?.user || session?.session);
   const role = session?.user?.role;
 
-  if ((isOps || isCustomer || isAdmin) && !isLoggedIn) {
+  if ((isOps || isCustomer || isAdmin || isAccount) && !isLoggedIn) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", pathname);
+    const nextTarget = `${pathname}${request.nextUrl.search}`;
+    loginUrl.searchParams.set("next", nextTarget);
     return NextResponse.redirect(loginUrl);
   }
 
   if (isAuthRoute && isLoggedIn) {
+    const next = request.nextUrl.searchParams.get("next");
+    if (next?.startsWith("/") && !next.startsWith("//")) {
+      return NextResponse.redirect(new URL(next, request.url));
+    }
     return NextResponse.redirect(new URL(homeForRole(role), request.url));
   }
 
   if (isAdmin && !canAccessAdmin(role)) {
-    return NextResponse.redirect(new URL(homeForRole(role), request.url));
+    return NextResponse.redirect(new URL("/unauthorized", request.url));
   }
 
   if (isOps && !canAccessOps(role)) {
-    return NextResponse.redirect(new URL("/customer", request.url));
+    return NextResponse.redirect(new URL("/unauthorized", request.url));
+  }
+
+  // Customer home dashboard is customers-only; agents/admins use their own dashboards.
+  if (isCustomer && !isCustomerPersonal(pathname) && !canAccessCustomerHome(role)) {
+    return NextResponse.redirect(new URL(homeForRole(role), request.url));
   }
 
   return NextResponse.next();
@@ -90,6 +127,8 @@ export const config = {
     "/customer/:path*",
     "/admin",
     "/admin/:path*",
+    "/account",
+    "/account/:path*",
     "/login",
     "/register",
     "/forgot-password",

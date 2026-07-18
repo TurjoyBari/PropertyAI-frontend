@@ -49,6 +49,22 @@ export async function createVisit(input: VisitInput) {
   return parse<Visit>(response);
 }
 
+export async function bookCustomerVisit(input: {
+  propertyId: string;
+  scheduledAt: string;
+  durationMinutes?: number;
+  locationNote?: string;
+  notes?: string;
+}) {
+  const response = await fetch("/api/visits/book", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  return parse<Visit>(response);
+}
+
 export async function updateVisit(id: string, input: Partial<VisitInput>) {
   const response = await fetch(`/api/visits/${id}`, {
     method: "PATCH",

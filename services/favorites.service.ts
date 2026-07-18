@@ -21,6 +21,14 @@ export async function listFavorites() {
   return parse<{ items: FavoriteItem[] }>(response);
 }
 
+export async function checkFavorite(propertyId: string) {
+  const response = await fetch(`/api/favorites/check/${propertyId}`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+  return parse<{ propertyId: string; favorited: boolean }>(response);
+}
+
 export async function addFavorite(propertyId: string) {
   const response = await fetch("/api/favorites", {
     method: "POST",

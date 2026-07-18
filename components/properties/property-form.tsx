@@ -8,7 +8,7 @@ import {
   toPropertyInput,
   type PropertyFormValues,
 } from "@/lib/property-schemas";
-import { PROPERTY_STATUSES, PROPERTY_TYPES, type Property } from "@/types/property";
+import { PROPERTY_PURPOSES, PROPERTY_STATUSES, PROPERTY_TYPES, type Property } from "@/types/property";
 import { uploadPropertyImages } from "@/services/uploads.service";
 
 const fieldClass =
@@ -39,6 +39,7 @@ export function PropertyForm({
       description: initial?.description ?? "",
       type: initial?.type ?? "apartment",
       status: initial?.status ?? "draft",
+      purpose: initial?.purpose ?? "sale",
       price: initial?.price ?? 0,
       currency: initial?.currency ?? "BDT",
       bedrooms: initial?.bedrooms ?? 0,
@@ -111,6 +112,17 @@ export function PropertyForm({
             {PROPERTY_TYPES.map((type) => (
               <option key={type} value={type}>
                 {type}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Purpose</label>
+          <select className={fieldClass} {...register("purpose")}>
+            {PROPERTY_PURPOSES.map((purpose) => (
+              <option key={purpose} value={purpose}>
+                {purpose === "sale" ? "Buy / Sale" : "Rent"}
               </option>
             ))}
           </select>
