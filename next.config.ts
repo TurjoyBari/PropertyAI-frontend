@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
         source: "/api/dashboard/:path*",
         destination: `${apiUrl}/api/dashboard/:path*`,
       },
+      {
+        source: "/api/properties",
+        destination: `${apiUrl}/api/properties`,
+      },
+      {
+        source: "/api/properties/:path*",
+        destination: `${apiUrl}/api/properties/:path*`,
+      },
     ];
   },
 };

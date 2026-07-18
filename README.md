@@ -39,6 +39,14 @@ Protected app shell with sidebar, KPI cards, Recharts trends, notifications, ske
 
 Stats come from `GET /api/dashboard/stats` (rewritten to NestJS).
 
+## Properties
+
+| Route | Purpose |
+|---|---|
+| `/properties` | Search/filter list |
+| `/properties/new` | Create listing |
+| `/properties/[id]` | Detail, edit, delete |
+
 ## Related
 
 Backend repository: [PropertyAI-backend](https://github.com/TurjoyBari/PropertyAI-backend)

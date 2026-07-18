@@ -18,7 +18,7 @@ import clsx from "clsx";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard#properties", label: "Properties", icon: Building2, soon: true },
+  { href: "/properties", label: "Properties", icon: Building2 },
   { href: "/dashboard#leads", label: "Leads", icon: Users, soon: true },
 ];
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const protectedPrefixes = ["/dashboard"];
+const protectedPrefixes = ["/dashboard", "/properties"];
 const authPrefixes = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 type SessionPayload = {
@@ -52,6 +52,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/properties",
+    "/properties/:path*",
     "/login",
     "/register",
     "/forgot-password",
