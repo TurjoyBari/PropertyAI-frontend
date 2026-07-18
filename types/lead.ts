@@ -82,4 +82,5 @@ export type LeadQuery = {
   temperature?: LeadTemperature | "";
   preferredLocation?: string;
   page?: number;
+  limit?: number;
 };

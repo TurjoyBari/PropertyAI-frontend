@@ -55,6 +55,12 @@ Stats come from `GET /api/dashboard/stats` (rewritten to NestJS).
 | `/leads/new` | Create lead |
 | `/leads/[id]` | Detail, status, notes, assign |
 
+## Pipeline
+
+| Route | Purpose |
+|---|---|
+| `/pipeline` | Drag-and-drop sales Kanban board |
+
 ## Related
 
 Backend repository: [PropertyAI-backend](https://github.com/TurjoyBari/PropertyAI-backend)
