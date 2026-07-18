@@ -12,6 +12,7 @@ import {
   Moon,
   Sun,
   Users,
+  BarChart3,
 } from "lucide-react";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useThemeStore } from "@/store/theme-store";
@@ -24,6 +25,8 @@ const navItems = [
   { href: "/leads", label: "Leads", icon: Users },
   { href: "/pipeline", label: "Pipeline", icon: KanbanSquare },
   { href: "/visits", label: "Visits", icon: CalendarDays },
+  { href: "/reports", label: "Reports", icon: BarChart3 },
+  { href: "/notifications", label: "Notifications", icon: Bell },
 ];
 
 export function AppSidebar() {

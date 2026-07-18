@@ -9,6 +9,7 @@ import {
   type PropertyFormValues,
 } from "@/lib/property-schemas";
 import { PROPERTY_STATUSES, PROPERTY_TYPES, type Property } from "@/types/property";
+import { uploadPropertyImages } from "@/services/uploads.service";
 
 const fieldClass =
   "w-full rounded-xl border border-[var(--border)] bg-transparent px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2";
@@ -23,10 +24,13 @@ export function PropertyForm({
   onSubmit: (values: ReturnType<typeof toPropertyInput>) => Promise<void>;
 }) {
   const [formError, setFormError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<PropertyFormValues>({
     resolver: zodResolver(propertyFormSchema),
@@ -51,6 +55,8 @@ export function PropertyForm({
     },
   });
 
+  const imagesValue = watch("images");
+
   const submit = handleSubmit(async (values) => {
     setFormError(null);
     try {
@@ -59,6 +65,22 @@ export function PropertyForm({
       setFormError(error instanceof Error ? error.message : "Save failed");
     }
   });
+
+  const onUpload = async (fileList: FileList | null) => {
+    if (!fileList?.length) return;
+    setUploading(true);
+    setFormError(null);
+    try {
+      const urls = await uploadPropertyImages(fileList);
+      const current = (imagesValue || "").trim();
+      const next = [current, ...urls].filter(Boolean).join("\n");
+      setValue("images", next, { shouldDirty: true });
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <form onSubmit={submit} className="space-y-5">
@@ -155,11 +177,22 @@ export function PropertyForm({
         </div>
 
         <div className="space-y-1.5 md:col-span-2">
-          <label className="text-sm font-medium">Image URLs (one per line)</label>
+          <label className="text-sm font-medium">Images</label>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="block w-full text-sm text-[var(--muted)] file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--accent-soft)] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[var(--accent)]"
+            onChange={(event) => onUpload(event.target.files)}
+            disabled={uploading}
+          />
+          <p className="mt-1 text-xs text-[var(--muted)]">
+            {uploading ? "Uploading..." : "Upload images or paste URLs below (one per line)."}
+          </p>
           <textarea
             rows={3}
-            placeholder="https://images.example.com/property-1.jpg"
-            className={fieldClass}
+            placeholder="/uploads/photo.jpg or https://..."
+            className={`${fieldClass} mt-2`}
             {...register("images")}
           />
         </div>
@@ -176,7 +209,7 @@ export function PropertyForm({
 
       <button
         type="submit"
-        disabled={isSubmitting}
+        disabled={isSubmitting || uploading}
         className="rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
       >
         {isSubmitting ? "Saving..." : submitLabel}

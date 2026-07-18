@@ -41,6 +41,26 @@ const nextConfig: NextConfig = {
         source: "/api/visits/:path*",
         destination: `${apiUrl}/api/visits/:path*`,
       },
+      {
+        source: "/api/reports/:path*",
+        destination: `${apiUrl}/api/reports/:path*`,
+      },
+      {
+        source: "/api/notifications",
+        destination: `${apiUrl}/api/notifications`,
+      },
+      {
+        source: "/api/notifications/:path*",
+        destination: `${apiUrl}/api/notifications/:path*`,
+      },
+      {
+        source: "/api/uploads/:path*",
+        destination: `${apiUrl}/api/uploads/:path*`,
+      },
+      {
+        source: "/uploads/:path*",
+        destination: `${apiUrl}/uploads/:path*`,
+      },
     ];
   },
 };

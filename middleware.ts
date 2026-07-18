@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const protectedPrefixes = ["/dashboard", "/properties", "/leads", "/pipeline", "/visits"];
+const protectedPrefixes = [
+  "/dashboard",
+  "/properties",
+  "/leads",
+  "/pipeline",
+  "/visits",
+  "/reports",
+  "/notifications",
+];
 const authPrefixes = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 type SessionPayload = {
@@ -60,6 +68,10 @@ export const config = {
     "/pipeline/:path*",
     "/visits",
     "/visits/:path*",
+    "/reports",
+    "/reports/:path*",
+    "/notifications",
+    "/notifications/:path*",
     "/login",
     "/register",
     "/forgot-password",
