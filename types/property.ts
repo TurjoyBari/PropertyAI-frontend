@@ -80,4 +80,5 @@ export type PropertyQuery = {
   minPrice?: string;
   maxPrice?: string;
   page?: number;
+  limit?: number;
 };

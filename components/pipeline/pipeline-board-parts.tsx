@@ -29,19 +29,21 @@ export function PipelineColumn({
     <section
       ref={setNodeRef}
       className={clsx(
-        "flex min-h-[28rem] w-72 shrink-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)]",
+        "flex min-h-[18rem] min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] xl:min-h-0 xl:h-full",
         isOver && "ring-2 ring-[var(--accent)]",
       )}
     >
-      <header className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
-        <h2 className="text-sm font-semibold">{STATUS_LABELS[status]}</h2>
-        <span className="rounded-lg bg-[var(--accent-soft)] px-2 py-0.5 text-xs font-medium text-[var(--accent)]">
+      <header className="flex items-center justify-between gap-2 border-b border-[var(--border)] px-3 py-2.5">
+        <h2 className="truncate text-xs font-semibold sm:text-sm">
+          {STATUS_LABELS[status]}
+        </h2>
+        <span className="shrink-0 rounded-lg bg-[var(--accent-soft)] px-2 py-0.5 text-xs font-medium text-[var(--accent)]">
           {leads.length}
         </span>
       </header>
-      <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-3">
+      <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-2 sm:p-3">
         {leads.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-[var(--border)] px-3 py-8 text-center text-xs text-[var(--muted)]">
+          <p className="rounded-xl border border-dashed border-[var(--border)] px-2 py-6 text-center text-xs text-[var(--muted)]">
             Drop leads here
           </p>
         ) : (
@@ -67,7 +69,7 @@ function PipelineCard({ lead }: { lead: Lead }) {
       ref={setNodeRef}
       style={style}
       className={clsx(
-        "rounded-xl border border-[var(--border)] bg-[var(--background)] p-3 shadow-sm",
+        "rounded-xl border border-[var(--border)] bg-[var(--background)] p-2.5 shadow-sm",
         isDragging && "opacity-60 ring-2 ring-[var(--accent)]",
       )}
     >
@@ -77,18 +79,18 @@ function PipelineCard({ lead }: { lead: Lead }) {
         {...listeners}
         {...attributes}
       >
-        <p className="text-sm font-semibold">{lead.fullName}</p>
-        <p className="mt-1 truncate text-xs text-[var(--muted)]">{lead.email}</p>
-        <div className="mt-3 flex items-center justify-between gap-2 text-[10px] uppercase tracking-wide text-[var(--muted)]">
-          <span className="capitalize">{lead.temperature}</span>
-          <span>{lead.source.replaceAll("_", " ")}</span>
+        <p className="truncate text-sm font-semibold">{lead.fullName}</p>
+        <p className="mt-0.5 truncate text-xs text-[var(--muted)]">{lead.email}</p>
+        <div className="mt-2 flex items-center justify-between gap-1 text-[10px] uppercase tracking-wide text-[var(--muted)]">
+          <span className="truncate capitalize">{lead.temperature}</span>
+          <span className="truncate">{lead.source.replaceAll("_", " ")}</span>
         </div>
       </button>
       <Link
         href={`/leads/${lead._id}`}
-        className="mt-3 inline-flex text-xs font-medium text-[var(--accent)] hover:underline"
+        className="mt-2 inline-flex text-xs font-medium text-[var(--accent)] hover:underline"
       >
-        Open details
+        Open
       </Link>
     </article>
   );

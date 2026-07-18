@@ -33,6 +33,14 @@ const nextConfig: NextConfig = {
         source: "/api/leads/:path*",
         destination: `${apiUrl}/api/leads/:path*`,
       },
+      {
+        source: "/api/visits",
+        destination: `${apiUrl}/api/visits`,
+      },
+      {
+        source: "/api/visits/:path*",
+        destination: `${apiUrl}/api/visits/:path*`,
+      },
     ];
   },
 };

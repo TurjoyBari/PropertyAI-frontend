@@ -117,20 +117,25 @@ export function PipelineBoard() {
 
   if (loading) {
     return (
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         {LEAD_STATUSES.map((status) => (
-          <div key={status} className="h-[28rem] w-72 shrink-0 animate-pulse rounded-2xl bg-[var(--border)]" />
+          <div
+            key={status}
+            className="h-[min(28rem,calc(100vh-12rem))] animate-pulse rounded-2xl bg-[var(--border)]"
+          />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex min-h-0 flex-col gap-4">
+      <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Sales Pipeline</h1>
-          <p className="mt-2 text-sm text-[var(--muted)]">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Sales Pipeline
+          </h1>
+          <p className="mt-1 text-sm text-[var(--muted)]">
             Drag leads across stages. Changes save instantly.
           </p>
         </div>
@@ -143,13 +148,13 @@ export function PipelineBoard() {
       </div>
 
       {error ? (
-        <p className="rounded-xl bg-[color-mix(in_oklab,var(--danger)_12%,transparent)] px-3 py-2 text-sm text-[var(--danger)]">
+        <p className="shrink-0 rounded-xl bg-[color-mix(in_oklab,var(--danger)_12%,transparent)] px-3 py-2 text-sm text-[var(--danger)]">
           {error}
         </p>
       ) : null}
 
       {savingId ? (
-        <p className="text-xs text-[var(--muted)]">Saving status update...</p>
+        <p className="shrink-0 text-xs text-[var(--muted)]">Saving status update...</p>
       ) : null}
 
       <DndContext
@@ -158,7 +163,7 @@ export function PipelineBoard() {
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
       >
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="grid min-h-0 flex-1 auto-rows-fr grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6 xl:h-[calc(100vh-11rem)]">
           {LEAD_STATUSES.map((status) => (
             <PipelineColumn key={status} status={status} leads={grouped[status]} />
           ))}
@@ -166,7 +171,7 @@ export function PipelineBoard() {
 
         <DragOverlay>
           {activeLead ? (
-            <div className="w-72 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 shadow-lg">
+            <div className="w-56 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 shadow-lg">
               <p className="text-sm font-semibold">{activeLead.fullName}</p>
               <p className="mt-1 text-xs text-[var(--muted)]">
                 Moving to {STATUS_LABELS[activeLead.status]}...

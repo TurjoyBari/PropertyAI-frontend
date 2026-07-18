@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
   Building2,
+  CalendarDays,
   KanbanSquare,
   LayoutDashboard,
   LogOut,
@@ -22,6 +23,7 @@ const navItems = [
   { href: "/properties", label: "Properties", icon: Building2 },
   { href: "/leads", label: "Leads", icon: Users },
   { href: "/pipeline", label: "Pipeline", icon: KanbanSquare },
+  { href: "/visits", label: "Visits", icon: CalendarDays },
 ];
 
 export function AppSidebar() {
