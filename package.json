@@ -11,12 +11,15 @@
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
     "better-auth": "^1.6.23",
+    "clsx": "^2.1.1",
     "lucide-react": "^1.25.0",
     "next": "15.5.20",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.82.0",
-    "zod": "^4.4.3"
+    "recharts": "^3.9.2",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

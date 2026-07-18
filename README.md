@@ -31,7 +31,13 @@ Auth requests go to same-origin `/api/auth/*` and are rewritten to the NestJS AP
 | `/register` | Create account |
 | `/forgot-password` | Request reset link |
 | `/reset-password?token=...` | Set new password |
-| `/dashboard` | Protected placeholder |
+| `/dashboard` | Protected operations dashboard |
+
+## Dashboard
+
+Protected app shell with sidebar, KPI cards, Recharts trends, notifications, skeletons, and light/dark theme toggle.
+
+Stats come from `GET /api/dashboard/stats` (rewritten to NestJS).
 
 ## Related
 
