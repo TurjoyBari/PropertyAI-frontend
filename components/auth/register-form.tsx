@@ -24,6 +24,7 @@ export function RegisterForm() {
       email: "",
       password: "",
       confirmPassword: "",
+      accountType: "customer",
     },
   });
 
@@ -34,7 +35,7 @@ export function RegisterForm() {
       name: values.name,
       email: values.email,
       password: values.password,
-      callbackURL: "/customer",
+      callbackURL: values.accountType === "agent" ? "/dashboard" : "/customer",
     });
 
     if (error) {
@@ -47,9 +48,24 @@ export function RegisterForm() {
       password: values.password,
     });
 
-    const session = await authClient.getSession();
-    const role = (session.data?.user as { role?: string } | undefined)?.role;
-    router.push(homeForRole(role));
+    // Map UI choice → Better Auth role (customer = user). Admin cannot self-register.
+    const rolePayload = values.accountType === "agent" ? "agent" : "user";
+    const roleResponse = await fetch("/api/account/signup-role", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: rolePayload }),
+    });
+
+    if (!roleResponse.ok) {
+      const payload = await roleResponse.json().catch(() => null);
+      setFormError(payload?.message || "Account created, but role could not be set");
+      return;
+    }
+
+    // Refresh session so middleware sees the updated role.
+    await authClient.getSession();
+    router.push(homeForRole(rolePayload));
     router.refresh();
   });
 
@@ -60,6 +76,36 @@ export function RegisterForm() {
           {formError}
         </p>
       ) : null}
+
+      <div className="space-y-2">
+        <p className="text-sm font-medium">I am registering as</p>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-[var(--border)] px-3 py-3 text-sm has-[:checked]:border-[var(--accent)] has-[:checked]:bg-[var(--accent-soft)]">
+            <input
+              type="radio"
+              value="customer"
+              className="accent-[var(--accent)]"
+              {...register("accountType")}
+            />
+            Customer
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-[var(--border)] px-3 py-3 text-sm has-[:checked]:border-[var(--accent)] has-[:checked]:bg-[var(--accent-soft)]">
+            <input
+              type="radio"
+              value="agent"
+              className="accent-[var(--accent)]"
+              {...register("accountType")}
+            />
+            Agent
+          </label>
+        </div>
+        {errors.accountType ? (
+          <p className="text-xs text-[var(--danger)]">{errors.accountType.message}</p>
+        ) : null}
+        <p className="text-xs text-[var(--muted)]">
+          Customer browses & books visits. Agent manages leads and listings. Admin is assigned later.
+        </p>
+      </div>
 
       <div className="space-y-1.5">
         <label htmlFor="name" className="text-sm font-medium">
