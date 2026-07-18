@@ -47,6 +47,14 @@ Stats come from `GET /api/dashboard/stats` (rewritten to NestJS).
 | `/properties/new` | Create listing |
 | `/properties/[id]` | Detail, edit, delete |
 
+## Leads
+
+| Route | Purpose |
+|---|---|
+| `/leads` | Search/filter pipeline list |
+| `/leads/new` | Create lead |
+| `/leads/[id]` | Detail, status, notes, assign |
+
 ## Related
 
 Backend repository: [PropertyAI-backend](https://github.com/TurjoyBari/PropertyAI-backend)

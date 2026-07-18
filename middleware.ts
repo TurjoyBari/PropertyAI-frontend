@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const protectedPrefixes = ["/dashboard", "/properties"];
+const protectedPrefixes = ["/dashboard", "/properties", "/leads"];
 const authPrefixes = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 type SessionPayload = {
@@ -54,6 +54,8 @@ export const config = {
     "/dashboard/:path*",
     "/properties",
     "/properties/:path*",
+    "/leads",
+    "/leads/:path*",
     "/login",
     "/register",
     "/forgot-password",

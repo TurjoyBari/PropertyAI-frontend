@@ -19,7 +19,7 @@ import clsx from "clsx";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/properties", label: "Properties", icon: Building2 },
-  { href: "/dashboard#leads", label: "Leads", icon: Users, soon: true },
+  { href: "/leads", label: "Leads", icon: Users },
 ];
 
 export function AppSidebar() {
@@ -62,9 +62,6 @@ export function AppSidebar() {
             >
               <Icon size={18} />
               <span className="flex-1">{item.label}</span>
-              {item.soon ? (
-                <span className="text-[10px] uppercase tracking-wide opacity-70">Soon</span>
-              ) : null}
             </Link>
           );
         })}
