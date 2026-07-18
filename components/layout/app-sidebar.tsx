@@ -13,6 +13,7 @@ import {
   Sun,
   Users,
   BarChart3,
+  Sparkles,
 } from "lucide-react";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useThemeStore } from "@/store/theme-store";
@@ -27,6 +28,7 @@ const navItems = [
   { href: "/visits", label: "Visits", icon: CalendarDays },
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/notifications", label: "Notifications", icon: Bell },
+  { href: "/ai", label: "AI Studio", icon: Sparkles },
 ];
 
 export function AppSidebar() {

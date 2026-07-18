@@ -8,6 +8,7 @@ const protectedPrefixes = [
   "/visits",
   "/reports",
   "/notifications",
+  "/ai",
 ];
 const authPrefixes = ["/login", "/register", "/forgot-password", "/reset-password"];
 
@@ -72,6 +73,8 @@ export const config = {
     "/reports/:path*",
     "/notifications",
     "/notifications/:path*",
+    "/ai",
+    "/ai/:path*",
     "/login",
     "/register",
     "/forgot-password",
