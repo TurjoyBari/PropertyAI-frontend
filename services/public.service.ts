@@ -36,11 +36,14 @@ export async function publicGetProperty(id: string) {
 }
 
 export async function publicMatchProperties(input: {
+  query?: string;
   budgetMin?: number;
   budgetMax?: number;
   location?: string;
   bedrooms?: number;
+  bathrooms?: number;
   propertyType?: PropertyType | "";
+  nearMetro?: boolean;
   notes?: string;
 }) {
   const response = await fetch("/api/public/match-properties", {

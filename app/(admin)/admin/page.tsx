@@ -62,7 +62,7 @@ export default function AdminHomePage() {
                 <td className="py-3">{user.email}</td>
                 <td className="py-3">
                   <select
-                    className="rounded-lg border border-[var(--border)] bg-transparent px-2 py-1"
+                    className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-2 py-1 text-[var(--foreground)]"
                     value={user.role}
                     onChange={async (e) => {
                       await updateUserRole(user.id, e.target.value);

@@ -91,7 +91,7 @@ export function MessagesView({
           <label className="block space-y-1.5 text-sm">
             <span className="font-medium">{peerLabel}</span>
             <input
-              className="w-full rounded-xl border border-[var(--border)] bg-transparent px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2"
               placeholder={toUserPlaceholder}
               value={toUserId}
               onChange={(e) => setToUserId(e.target.value)}
@@ -101,7 +101,7 @@ export function MessagesView({
           <label className="block space-y-1.5 text-sm">
             <span className="font-medium">Message</span>
             <textarea
-              className="w-full rounded-xl border border-[var(--border)] bg-transparent px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2"
               rows={4}
               placeholder="Write your message…"
               value={body}

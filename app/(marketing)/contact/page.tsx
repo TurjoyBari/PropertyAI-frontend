@@ -4,7 +4,7 @@ import { useState } from "react";
 import { publicCreateInquiry } from "@/services/public.service";
 
 const field =
-  "w-full rounded-xl border border-[var(--border)] bg-transparent px-3 py-2.5 text-sm";
+  "w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm";
 
 export default function ContactPage() {
   const [message, setMessage] = useState<string | null>(null);

@@ -12,7 +12,7 @@ import {
 } from "@/types/lead";
 
 const fieldClass =
-  "rounded-xl border border-[var(--border)] bg-transparent px-3 py-2 text-sm outline-none ring-[var(--accent)] focus:ring-2";
+  "rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm outline-none ring-[var(--accent)] focus:ring-2";
 
 export function LeadsView() {
   const [items, setItems] = useState<Lead[]>([]);

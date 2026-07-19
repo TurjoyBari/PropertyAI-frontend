@@ -108,10 +108,28 @@ export function ReportsView() {
         <ChartCard title="Closed leads by month">
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={data.charts.salesByMonth}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-              <XAxis dataKey="month" />
-              <YAxis allowDecimals={false} />
-              <Tooltip />
+              <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "var(--muted)", fontSize: 12 }}
+              />
+              <YAxis
+                allowDecimals={false}
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "var(--muted)", fontSize: 12 }}
+                width={32}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "var(--card)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 12,
+                  color: "var(--foreground)",
+                }}
+              />
               <Bar dataKey="value" fill="var(--accent)" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -120,10 +138,28 @@ export function ReportsView() {
         <ChartCard title="Lead sources">
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={data.charts.leadSources}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-              <XAxis dataKey="source" />
-              <YAxis allowDecimals={false} />
-              <Tooltip />
+              <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
+              <XAxis
+                dataKey="source"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "var(--muted)", fontSize: 12 }}
+              />
+              <YAxis
+                allowDecimals={false}
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "var(--muted)", fontSize: 12 }}
+                width={32}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "var(--card)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 12,
+                  color: "var(--foreground)",
+                }}
+              />
               <Bar dataKey="count" fill="var(--accent)" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

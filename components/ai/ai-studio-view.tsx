@@ -4,26 +4,35 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import {
-  chatWithAgent,
+  generatePropertyDescription,
   getAiStatus,
   matchProperties,
-  scoreLead,
+  summarizeLead,
 } from "@/services/ai.service";
+import { PropertyAiChat } from "@/components/ai/property-ai-chat";
 import { listLeads } from "@/services/leads.service";
-import { listProperties } from "@/services/properties.service";
 import { PROPERTY_TYPES, type PropertyType } from "@/types/property";
 import type { Lead } from "@/types/lead";
-import type { Property } from "@/types/property";
 import type {
   AiStatus,
+  GenerateDescriptionResponse,
+  LeadSummaryResponse,
   MatchPropertiesResponse,
-  ScoreLeadResponse,
 } from "@/types/ai";
 
 const fieldClass =
-  "w-full rounded-xl border border-[var(--border)] bg-transparent px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2";
+  "w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2";
 
-type Tab = "match" | "score" | "agent";
+type Tab = "match" | "describe" | "summary" | "agent";
+
+function AiNotice({ text }: { text?: string }) {
+  if (!text) return null;
+  return (
+    <p className="rounded-xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] px-3 py-2 text-sm">
+      {text}
+    </p>
+  );
+}
 
 export function AiStudioView() {
   const [tab, setTab] = useState<Tab>("match");
@@ -43,20 +52,23 @@ export function AiStudioView() {
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">AI Studio</h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
-          Property matching, lead scoring, and sales agent powered by Gemini.
+          AI enhances search and writing. Listings always come from MongoDB —
+          the app works even when AI is offline.
         </p>
       </div>
 
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm">
         {status ? (
           <p>
+            Provider: <span className="font-medium">{status.provider || "gemini"}</span>
+            {" · "}
             Model: <span className="font-medium">{status.model}</span>
             {" · "}
             {status.configured ? (
-              <span className="text-[var(--accent)]">Gemini configured</span>
+              <span className="text-[var(--accent)]">AI configured</span>
             ) : (
-              <span className="text-[var(--danger)]">
-                GEMINI_API_KEY missing in backend .env
+              <span className="text-[var(--muted)]">
+                AI offline — standard search & templates still work
               </span>
             )}
           </p>
@@ -74,9 +86,10 @@ export function AiStudioView() {
       <div className="flex flex-wrap gap-2">
         {(
           [
-            ["match", "Property Matching"],
-            ["score", "Lead Scoring"],
-            ["agent", "Sales Agent"],
+            ["match", "Property Finder"],
+            ["describe", "Description Generator"],
+            ["summary", "Lead Summary"],
+            ["agent", "Chat Assistant"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -99,8 +112,13 @@ export function AiStudioView() {
       </div>
 
       {tab === "match" ? <MatchPanel onError={setError} /> : null}
-      {tab === "score" ? <ScorePanel onError={setError} /> : null}
-      {tab === "agent" ? <AgentPanel onError={setError} /> : null}
+      {tab === "describe" ? <DescribePanel onError={setError} /> : null}
+      {tab === "summary" ? <SummaryPanel onError={setError} /> : null}
+      {tab === "agent" ? (
+        <div className="h-[36rem] rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+          <PropertyAiChat variant="studio" onError={setError} />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -109,6 +127,7 @@ function MatchPanel({ onError }: { onError: (value: string | null) => void }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<MatchPropertiesResponse | null>(null);
   const [form, setForm] = useState({
+    query: "",
     budgetMin: "",
     budgetMax: "",
     location: "",
@@ -127,6 +146,7 @@ function MatchPanel({ onError }: { onError: (value: string | null) => void }) {
           onError(null);
           try {
             const data = await matchProperties({
+              query: form.query || undefined,
               budgetMin: form.budgetMin ? Number(form.budgetMin) : undefined,
               budgetMax: form.budgetMax ? Number(form.budgetMax) : undefined,
               location: form.location || undefined,
@@ -142,7 +162,14 @@ function MatchPanel({ onError }: { onError: (value: string | null) => void }) {
           }
         }}
       >
-        <h2 className="text-lg font-semibold">Buyer criteria</h2>
+        <h2 className="text-lg font-semibold">Natural language + filters</h2>
+        <textarea
+          className={fieldClass}
+          rows={3}
+          placeholder='e.g. "3 bedroom apartment in Uttara under 80 lakh near metro"'
+          value={form.query}
+          onChange={(e) => setForm((f) => ({ ...f, query: e.target.value }))}
+        />
         <div className="grid gap-3 sm:grid-cols-2">
           <input
             className={fieldClass}
@@ -191,8 +218,8 @@ function MatchPanel({ onError }: { onError: (value: string | null) => void }) {
         </div>
         <textarea
           className={fieldClass}
-          rows={3}
-          placeholder="Extra notes (schools nearby, parking...)"
+          rows={2}
+          placeholder="Extra notes (optional)"
           value={form.notes}
           onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
         />
@@ -201,18 +228,19 @@ function MatchPanel({ onError }: { onError: (value: string | null) => void }) {
           disabled={loading}
           className="rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
         >
-          {loading ? "Matching..." : "Find matches"}
+          {loading ? "Searching MongoDB..." : "Find matches"}
         </button>
       </form>
 
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
-        <h2 className="text-lg font-semibold">Results</h2>
+        <h2 className="text-lg font-semibold">Database results</h2>
         {!result ? (
           <p className="mt-4 text-sm text-[var(--muted)]">
-            Enter criteria to get ranked property recommendations.
+            AI extracts filters when needed; results always come from MongoDB.
           </p>
         ) : (
           <div className="mt-4 space-y-4">
+            <AiNotice text={result.notice} />
             <p className="text-sm text-[var(--muted)]">{result.summary}</p>
             {result.matches.length === 0 ? (
               <p className="text-sm text-[var(--muted)]">No matches found.</p>
@@ -255,11 +283,145 @@ function MatchPanel({ onError }: { onError: (value: string | null) => void }) {
   );
 }
 
-function ScorePanel({ onError }: { onError: (value: string | null) => void }) {
+function DescribePanel({ onError }: { onError: (value: string | null) => void }) {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<GenerateDescriptionResponse | null>(null);
+  const [form, setForm] = useState({
+    title: "",
+    location: "",
+    features: "",
+    area: "",
+    bedrooms: "",
+    bathrooms: "",
+    price: "",
+  });
+
+  return (
+    <div className="grid gap-6 xl:grid-cols-2">
+      <form
+        className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          setLoading(true);
+          onError(null);
+          try {
+            setResult(
+              await generatePropertyDescription({
+                title: form.title,
+                location: form.location,
+                features: form.features || undefined,
+                area: form.area || undefined,
+                bedrooms: form.bedrooms ? Number(form.bedrooms) : undefined,
+                bathrooms: form.bathrooms ? Number(form.bathrooms) : undefined,
+                price: form.price ? Number(form.price) : undefined,
+              }),
+            );
+          } catch (err) {
+            onError(err instanceof Error ? err.message : "Generation failed");
+          } finally {
+            setLoading(false);
+          }
+        }}
+      >
+        <h2 className="text-lg font-semibold">Listing inputs</h2>
+        <input
+          className={fieldClass}
+          placeholder="Title"
+          required
+          value={form.title}
+          onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+        />
+        <input
+          className={fieldClass}
+          placeholder="Location"
+          required
+          value={form.location}
+          onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+        />
+        <textarea
+          className={fieldClass}
+          rows={3}
+          placeholder="Features"
+          value={form.features}
+          onChange={(e) => setForm((f) => ({ ...f, features: e.target.value }))}
+        />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <input
+            className={fieldClass}
+            placeholder="Area / size"
+            value={form.area}
+            onChange={(e) => setForm((f) => ({ ...f, area: e.target.value }))}
+          />
+          <input
+            className={fieldClass}
+            placeholder="Price"
+            type="number"
+            value={form.price}
+            onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+          />
+          <input
+            className={fieldClass}
+            placeholder="Bedrooms"
+            type="number"
+            value={form.bedrooms}
+            onChange={(e) => setForm((f) => ({ ...f, bedrooms: e.target.value }))}
+          />
+          <input
+            className={fieldClass}
+            placeholder="Bathrooms"
+            type="number"
+            value={form.bathrooms}
+            onChange={(e) => setForm((f) => ({ ...f, bathrooms: e.target.value }))}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+        >
+          {loading ? "Generating..." : "Generate description"}
+        </button>
+      </form>
+
+      <section className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+        <h2 className="text-lg font-semibold">Generated copy</h2>
+        {!result ? (
+          <p className="text-sm text-[var(--muted)]">
+            AI writes description, SEO text, and marketing caption from your facts.
+          </p>
+        ) : (
+          <>
+            <AiNotice text={result.notice} />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                Description
+              </p>
+              <p className="mt-1 whitespace-pre-wrap text-sm">{result.description}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                SEO
+              </p>
+              <p className="mt-1 text-sm">{result.seoDescription}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                Caption
+              </p>
+              <p className="mt-1 text-sm">{result.marketingCaption}</p>
+            </div>
+          </>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function SummaryPanel({ onError }: { onError: (value: string | null) => void }) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadId, setLeadId] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<ScoreLeadResponse | null>(null);
+  const [result, setResult] = useState<LeadSummaryResponse | null>(null);
 
   useEffect(() => {
     listLeads({ limit: 100 })
@@ -277,15 +439,15 @@ function ScorePanel({ onError }: { onError: (value: string | null) => void }) {
           setLoading(true);
           onError(null);
           try {
-            setResult(await scoreLead(leadId));
+            setResult(await summarizeLead(leadId));
           } catch (err) {
-            onError(err instanceof Error ? err.message : "Scoring failed");
+            onError(err instanceof Error ? err.message : "Summary failed");
           } finally {
             setLoading(false);
           }
         }}
       >
-        <h2 className="text-lg font-semibold">Score a lead</h2>
+        <h2 className="text-lg font-semibold">Summarize a lead</h2>
         <select
           className={fieldClass}
           value={leadId}
@@ -304,34 +466,41 @@ function ScorePanel({ onError }: { onError: (value: string | null) => void }) {
           disabled={loading || !leadId}
           className="rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
         >
-          {loading ? "Scoring..." : "Run AI score"}
+          {loading ? "Summarizing..." : "Generate AI summary"}
         </button>
       </form>
 
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
-        <h2 className="text-lg font-semibold">Score result</h2>
+        <h2 className="text-lg font-semibold">Lead summary</h2>
         {!result ? (
           <p className="mt-4 text-sm text-[var(--muted)]">
-            Pick a lead to generate score, temperature, and next action.
+            Interest, budget, location, conversation summary, and next action.
           </p>
         ) : (
           <div className="mt-4 space-y-3 text-sm">
+            <AiNotice text={result.notice} />
             <p>
               Score: <strong>{result.score}</strong> · Temperature:{" "}
               <strong className="capitalize">{result.temperature}</strong>
             </p>
-            <p>Conversion probability: {result.conversionProbability}%</p>
+            <p>
+              <span className="text-[var(--muted)]">Interest:</span>{" "}
+              {result.customerInterest}
+            </p>
+            <p>
+              <span className="text-[var(--muted)]">Budget:</span> {result.budget}
+            </p>
+            <p>
+              <span className="text-[var(--muted)]">Preferred location:</span>{" "}
+              {result.preferredLocation}
+            </p>
+            <p>
+              <span className="text-[var(--muted)]">Conversation:</span>{" "}
+              {result.conversationSummary}
+            </p>
             <p>
               Next action: <strong>{result.recommendedNextAction}</strong>
             </p>
-            <p className="text-[var(--muted)]">{result.rationale}</p>
-            {result.factors?.length ? (
-              <ul className="list-disc space-y-1 pl-5 text-[var(--muted)]">
-                {result.factors.map((factor) => (
-                  <li key={factor}>{factor}</li>
-                ))}
-              </ul>
-            ) : null}
             <Link
               href={`/leads/${result.leadId}`}
               className="inline-flex text-xs font-medium text-[var(--accent)] hover:underline"
@@ -341,118 +510,6 @@ function ScorePanel({ onError }: { onError: (value: string | null) => void }) {
           </div>
         )}
       </section>
-    </div>
-  );
-}
-
-function AgentPanel({ onError }: { onError: (value: string | null) => void }) {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [propertyId, setPropertyId] = useState("");
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [history, setHistory] = useState<
-    Array<{ role: "user" | "assistant"; content: string }>
-  >([]);
-
-  useEffect(() => {
-    listProperties({ limit: 50 })
-      .then((data) => setProperties(data.items))
-      .catch(() => setProperties([]));
-  }, []);
-
-  return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
-        <div className="flex-1 space-y-1.5">
-          <label className="text-sm font-medium">Focus property (optional)</label>
-          <select
-            className={fieldClass}
-            value={propertyId}
-            onChange={(e) => setPropertyId(e.target.value)}
-          >
-            <option value="">General inventory</option>
-            {properties.map((property) => (
-              <option key={property._id} value={property._id}>
-                {property.title} · {property.location.city}
-              </option>
-            ))}
-          </select>
-        </div>
-        <button
-          type="button"
-          className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm"
-          onClick={() => setHistory([])}
-        >
-          Clear chat
-        </button>
-      </div>
-
-      <div className="mb-4 max-h-[22rem] space-y-3 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--background)] p-4">
-        {history.length === 0 ? (
-          <p className="text-sm text-[var(--muted)]">
-            Ask about pricing, amenities, or how to book a visit.
-          </p>
-        ) : (
-          history.map((item, index) => (
-            <div
-              key={`${item.role}-${index}`}
-              className={clsx(
-                "rounded-xl px-3 py-2 text-sm",
-                item.role === "user"
-                  ? "ml-8 bg-[var(--accent-soft)] text-[var(--accent)]"
-                  : "mr-8 bg-[var(--card)]",
-              )}
-            >
-              <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--muted)]">
-                {item.role === "user" ? "You" : "Agent"}
-              </p>
-              <p className="whitespace-pre-wrap">{item.content}</p>
-            </div>
-          ))
-        )}
-      </div>
-
-      <form
-        className="flex flex-col gap-3 sm:flex-row"
-        onSubmit={async (event) => {
-          event.preventDefault();
-          if (!message.trim()) return;
-          const nextHistory = [...history, { role: "user" as const, content: message.trim() }];
-          setHistory(nextHistory);
-          setMessage("");
-          setLoading(true);
-          onError(null);
-          try {
-            const data = await chatWithAgent({
-              message: nextHistory[nextHistory.length - 1].content,
-              propertyId: propertyId || undefined,
-              history: nextHistory.slice(0, -1),
-            });
-            setHistory((prev) => [
-              ...prev,
-              { role: "assistant", content: data.reply },
-            ]);
-          } catch (err) {
-            onError(err instanceof Error ? err.message : "Chat failed");
-          } finally {
-            setLoading(false);
-          }
-        }}
-      >
-        <input
-          className={fieldClass}
-          placeholder="Ask the sales agent..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-        />
-        <button
-          type="submit"
-          disabled={loading || !message.trim()}
-          className="rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
-        >
-          {loading ? "Thinking..." : "Send"}
-        </button>
-      </form>
     </div>
   );
 }

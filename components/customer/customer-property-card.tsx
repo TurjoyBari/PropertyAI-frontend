@@ -61,7 +61,7 @@ export function CustomerPropertyCard({
           type="button"
           aria-label={favorited ? "Remove favorite" : "Save favorite"}
           disabled={busy}
-          className="absolute right-3 top-3 rounded-full bg-white/90 p-2 text-[var(--foreground)] shadow-sm backdrop-blur transition hover:scale-105 disabled:opacity-60"
+          className="absolute right-3 top-3 rounded-full bg-black/45 p-2 text-white shadow-sm backdrop-blur transition hover:scale-105 disabled:opacity-60"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();

@@ -16,7 +16,7 @@ import {
 const PAGE_SIZE = 12;
 
 const fieldClass =
-  "rounded-xl border border-[var(--border)] bg-transparent px-3 py-2 text-sm outline-none ring-[var(--accent)] focus:ring-2";
+  "rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm outline-none ring-[var(--accent)] focus:ring-2";
 
 function parseFilters(params: URLSearchParams): PropertyQuery {
   const pageRaw = Number(params.get("page") || "1");

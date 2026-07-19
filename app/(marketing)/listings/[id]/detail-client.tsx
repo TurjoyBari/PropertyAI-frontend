@@ -19,7 +19,7 @@ import type { Property } from "@/types/property";
 import { trackRecentlyViewed } from "@/lib/recently-viewed";
 
 const field =
-  "w-full rounded-xl border border-[var(--border)] bg-transparent px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2";
+  "w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2";
 
 function scrollKey(id: string) {
   return `property-scroll:${id}`;
@@ -238,7 +238,7 @@ export function ListingDetailClient() {
                   sizes="800px"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/35">
-                  <p className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-[var(--foreground)]">
+                  <p className="rounded-xl bg-[var(--card)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] shadow-sm">
                     360° tour available on request
                   </p>
                 </div>

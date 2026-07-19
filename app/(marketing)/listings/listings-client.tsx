@@ -278,7 +278,7 @@ export default function ListingsPageClient() {
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <select
-            className="rounded-xl border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+            className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--foreground)]"
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
           >

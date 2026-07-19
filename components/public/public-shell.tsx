@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 import clsx from "clsx";
 import { useSession } from "@/lib/auth-client";
 import { UserMenu, type AuthUser } from "@/components/public/user-menu";
+import { AiChatWidget } from "@/components/public/ai-chat-widget";
 
 const links = [
   { href: "/listings?intent=buy", label: "Buy", match: "buy" as const },
@@ -194,7 +195,7 @@ function PublicShellInner({ children }: { children: ReactNode }) {
                 type="email"
                 required
                 placeholder="Email"
-                className="w-full rounded-xl border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm"
               />
               <button
                 type="submit"
@@ -220,6 +221,8 @@ function PublicShellInner({ children }: { children: ReactNode }) {
           © {new Date().getFullYear()} PropertyAI. All rights reserved.
         </div>
       </footer>
+
+      <AiChatWidget />
     </div>
   );
 }

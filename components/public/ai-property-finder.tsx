@@ -2,7 +2,11 @@
 
 import { FormEvent, useState } from "react";
 import { Sparkles } from "lucide-react";
-import { AiMatchCard, AiMatchLoading } from "@/components/public/ai-match-card";
+import {
+  AiMatchCard,
+  AiMatchEmpty,
+  AiMatchLoading,
+} from "@/components/public/ai-match-card";
 import { parseBedrooms, parseBudgetToBdt, parsePropertyType } from "@/lib/budget";
 import { publicMatchProperties } from "@/services/public.service";
 import { PROPERTY_TYPES } from "@/types/property";
@@ -12,6 +16,7 @@ const field =
   "w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-3 text-sm outline-none ring-[var(--accent)] placeholder:text-[var(--muted)] focus:ring-2";
 
 type AiForm = {
+  query: string;
   budget: string;
   location: string;
   bedrooms: string;
@@ -19,6 +24,7 @@ type AiForm = {
 };
 
 const defaults: AiForm = {
+  query: "",
   budget: "",
   location: "",
   bedrooms: "",
@@ -36,15 +42,32 @@ export function AiPropertyFinder({ compact = false }: { compact?: boolean }) {
     setLoading(true);
     setError(null);
     try {
-      const budgetMax = parseBudgetToBdt(form.budget || "80 Lakh");
-      const bedrooms = parseBedrooms(form.bedrooms || "3");
+      const query =
+        form.query.trim() ||
+        [
+          form.bedrooms && `${form.bedrooms} bedroom`,
+          form.propertyType,
+          form.location && `in ${form.location}`,
+          form.budget && `under ${form.budget}`,
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+      const budgetMax = form.budget
+        ? parseBudgetToBdt(form.budget)
+        : undefined;
+      const bedrooms = form.bedrooms
+        ? parseBedrooms(form.bedrooms)
+        : undefined;
       const propertyType = parsePropertyType(form.propertyType);
+
       const data = await publicMatchProperties({
+        query: query || undefined,
         budgetMax,
-        location: (form.location || "Uttara").trim(),
+        location: form.location.trim() || undefined,
         bedrooms,
         propertyType: propertyType || undefined,
-        notes: `Budget: ${form.budget || "80 Lakh"}; Location: ${form.location || "Uttara"}; Bedrooms: ${form.bedrooms || "3"}; Type: ${form.propertyType || "Apartment"}`,
+        notes: query || undefined,
       });
       setResult(data);
     } catch (err) {
@@ -55,6 +78,9 @@ export function AiPropertyFinder({ compact = false }: { compact?: boolean }) {
     }
   };
 
+  const matches = result?.matches ?? [];
+  const showResults = loading || result;
+
   return (
     <div className={compact ? "" : "mx-auto max-w-7xl px-4 py-10 lg:px-6"}>
       {!compact ? (
@@ -64,24 +90,35 @@ export function AiPropertyFinder({ compact = false }: { compact?: boolean }) {
             Find your next home with AI
           </h1>
           <p className="mt-3 text-sm text-[var(--muted)] sm:text-base">
-            Describe your budget and neighborhood — we rank verified listings for you.
+            Describe what you need in plain language. AI only understands your
+            request — listings always come from our database.
           </p>
         </div>
       ) : null}
 
-      <div className={`grid gap-6 ${compact ? "lg:grid-cols-[1.05fr_0.95fr]" : "mt-8 lg:grid-cols-2"}`}>
-        <form
-          onSubmit={onSubmit}
-          className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow)] sm:p-6"
-        >
-          <div className="mb-5 flex items-center gap-2 text-sm text-[var(--muted)]">
-            <Sparkles size={16} className="text-[var(--accent)]" />
-            Chat-style search — placeholders show example criteria
-          </div>
+      <form
+        onSubmit={onSubmit}
+        className={`rounded-3xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow)] sm:p-6 ${compact ? "" : "mt-8 max-w-3xl"}`}
+      >
+        <div className="mb-5 flex items-center gap-2 text-sm text-[var(--muted)]">
+          <Sparkles size={16} className="text-[var(--accent)]" />
+          Natural language search — filters are optional helpers
+        </div>
 
-          <div className="space-y-4">
+        <div className="space-y-4">
+          <label className="block space-y-1.5">
+            <span className="text-sm font-medium">What are you looking for?</span>
+            <textarea
+              className={field}
+              rows={3}
+              placeholder='e.g. "I need a 3 bedroom apartment in Uttara under 80 lakh near a metro station."'
+              value={form.query}
+              onChange={(e) => setForm((f) => ({ ...f, query: e.target.value }))}
+            />
+          </label>
+          <div className="grid gap-4 sm:grid-cols-2">
             <label className="block space-y-1.5">
-              <span className="text-sm font-medium">Budget</span>
+              <span className="text-sm font-medium">Budget (optional)</span>
               <input
                 className={field}
                 placeholder="80 Lakh"
@@ -90,7 +127,7 @@ export function AiPropertyFinder({ compact = false }: { compact?: boolean }) {
               />
             </label>
             <label className="block space-y-1.5">
-              <span className="text-sm font-medium">Location</span>
+              <span className="text-sm font-medium">Location (optional)</span>
               <input
                 className={field}
                 placeholder="Uttara"
@@ -99,7 +136,7 @@ export function AiPropertyFinder({ compact = false }: { compact?: boolean }) {
               />
             </label>
             <label className="block space-y-1.5">
-              <span className="text-sm font-medium">Bedrooms</span>
+              <span className="text-sm font-medium">Bedrooms (optional)</span>
               <input
                 className={field}
                 placeholder="3 Bedrooms"
@@ -108,7 +145,7 @@ export function AiPropertyFinder({ compact = false }: { compact?: boolean }) {
               />
             </label>
             <label className="block space-y-1.5">
-              <span className="text-sm font-medium">Property Type</span>
+              <span className="text-sm font-medium">Property Type (optional)</span>
               <input
                 className={field}
                 list="ai-property-types"
@@ -123,44 +160,72 @@ export function AiPropertyFinder({ compact = false }: { compact?: boolean }) {
               </datalist>
             </label>
           </div>
+        </div>
 
-          {error ? <p className="mt-4 text-sm text-[var(--danger)]">{error}</p> : null}
+        {error ? <p className="mt-4 text-sm text-[var(--danger)]">{error}</p> : null}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
-          >
-            <Sparkles size={16} />
-            {loading ? "Finding matches..." : "Find My Property"}
-          </button>
-        </form>
+        <button
+          type="submit"
+          disabled={loading}
+          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
+        >
+          <Sparkles size={16} />
+          {loading ? "Searching listings..." : "Find My Property"}
+        </button>
+      </form>
 
-        <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
-          <h2 className="font-display text-xl font-semibold tracking-tight">Recommendations</h2>
-          <div className="mt-4 space-y-4">
-            {loading ? <AiMatchLoading /> : null}
-            {!loading && !result ? (
-              <p className="rounded-2xl border border-dashed border-[var(--border)] px-4 py-10 text-center text-sm text-[var(--muted)]">
-                Your AI matches will appear here with scores, photos, and reasons.
-              </p>
-            ) : null}
-            {!loading && result && result.matches.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-[var(--border)] px-4 py-10 text-center text-sm text-[var(--muted)]">
-                {result.summary || "No matches found. Try a wider budget or another area."}
-              </p>
-            ) : null}
-            {!loading && result?.matches.length
-              ? result.matches.slice(0, 3).map((item) => (
-                  <AiMatchCard key={item.propertyId} item={item} />
-                ))
-              : null}
-            {!loading && result?.summary && result.matches.length > 0 ? (
-              <p className="text-xs text-[var(--muted)]">{result.summary}</p>
+      <section className={compact ? "mt-6" : "mt-10"}>
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 className="font-display text-xl font-semibold tracking-tight">
+              {showResults ? "Matching properties" : "Recommendations"}
+            </h2>
+            {!loading && result?.summary && matches.length > 0 ? (
+              <p className="mt-1 text-sm text-[var(--muted)]">{result.summary}</p>
             ) : null}
           </div>
-        </section>
-      </div>
+          {!loading && matches.length > 0 ? (
+            <p className="text-xs text-[var(--muted)]">
+              {matches.length} result{matches.length === 1 ? "" : "s"}
+              {result?.mode === "fallback" ? " · filter match" : ""}
+            </p>
+          ) : null}
+        </div>
+
+        {!loading && result?.notice ? (
+          <p className="mb-4 rounded-xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] px-3 py-2 text-sm">
+            {result.notice}
+          </p>
+        ) : null}
+
+        {loading ? <AiMatchLoading count={compact ? 2 : 3} /> : null}
+
+        {!loading && !result ? (
+          <p className="rounded-2xl border border-dashed border-[var(--border)] px-4 py-10 text-center text-sm text-[var(--muted)]">
+            Matching property cards from our database will appear here after you
+            search.
+          </p>
+        ) : null}
+
+        {!loading && result && matches.length === 0 ? (
+          <AiMatchEmpty
+            summary={result.summary}
+            suggestions={result.suggestions}
+          />
+        ) : null}
+
+        {!loading && matches.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {matches.map((item) => (
+              <AiMatchCard
+                key={item.propertyId}
+                item={item}
+                mode={result?.mode || "live"}
+              />
+            ))}
+          </div>
+        ) : null}
+      </section>
     </div>
   );
 }

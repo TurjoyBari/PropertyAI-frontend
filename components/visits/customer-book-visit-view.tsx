@@ -13,7 +13,7 @@ import { toast } from "@/store/toast-store";
 import type { Property } from "@/types/property";
 
 const field =
-  "w-full rounded-xl border border-[var(--border)] bg-transparent px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2";
+  "w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2";
 
 function toDatetimeLocal(date = new Date()) {
   const p = (n: number) => String(n).padStart(2, "0");

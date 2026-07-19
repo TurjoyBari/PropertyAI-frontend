@@ -2,6 +2,8 @@ export type AiStatus = {
   configured: boolean;
   features: string[];
   model: string;
+  provider?: string;
+  philosophy?: string;
 };
 
 export type MatchPropertyResult = {
@@ -33,7 +35,10 @@ export type MatchPropertiesResponse = {
   matches: MatchPropertyResult[];
   alternatives: MatchPropertyResult[];
   summary: string;
-  mode: "empty" | "live" | "fallback";
+  mode: "empty" | "live" | "fallback" | "cache";
+  notice?: string;
+  aiUsed?: boolean;
+  suggestions?: string[];
 };
 
 export type ScoreLeadResponse = {
@@ -44,10 +49,56 @@ export type ScoreLeadResponse = {
   recommendedNextAction: string;
   rationale: string;
   factors: string[];
+  customerInterest?: string;
+  budget?: string;
+  preferredLocation?: string;
+  conversationSummary?: string;
+  mode?: "empty" | "live" | "fallback" | "cache";
+  notice?: string;
+};
+
+export type LeadSummaryResponse = ScoreLeadResponse & {
+  customerInterest: string;
+  budget: string;
+  preferredLocation: string;
+  conversationSummary: string;
+};
+
+export type GenerateDescriptionResponse = {
+  description: string;
+  seoDescription: string;
+  marketingCaption: string;
+  mode: "empty" | "live" | "fallback" | "cache";
+  notice?: string;
 };
 
 export type ChatAgentResponse = {
   reply: string;
   propertyId: string | null;
-  mode: "text-agent";
+  mode: "text-agent" | "fallback";
+  intent?: string;
+  notice?: string;
+  criteria?: Record<string, unknown>;
+  matches?: MatchPropertyResult[];
+  lastShownPropertyIds?: string[];
+  quickReplies?: string[];
+  bookVisitUrl?: string;
+  bookVisitLabel?: string;
+  favoritesUrl?: string;
+  propertyDetail?: {
+    id: string;
+    title: string;
+    price: number;
+    currency: string;
+    priceLabel: string;
+    locationLabel: string;
+    bedrooms: number;
+    bathrooms: number;
+    areaLabel: string;
+    description: string;
+    features: string;
+    agentName: string;
+    availability: string;
+    images: string[];
+  };
 };
