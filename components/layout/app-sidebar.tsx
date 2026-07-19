@@ -26,8 +26,15 @@ export function AppSidebar() {
   const role = getRole(session?.user as { role?: string });
 
   const navItems = useMemo(() => {
+    const messagesHref =
+      role === "admin" ? "/admin/messages" : "/messages";
+
     const items = [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      {
+        href: role === "admin" ? "/admin/dashboard" : "/agent/dashboard",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+      },
       { href: "/properties", label: "Properties", icon: Building2 },
       { href: "/leads", label: "Leads", icon: Users },
       { href: "/pipeline", label: "Pipeline", icon: KanbanSquare },
@@ -35,11 +42,13 @@ export function AppSidebar() {
       { href: "/reports", label: "Reports", icon: BarChart3 },
       { href: "/notifications", label: "Notifications", icon: Bell },
       { href: "/ai", label: "AI Studio", icon: Sparkles },
+      { href: messagesHref, label: "Messages", icon: MessageSquare },
     ];
+
     if (role === "admin") {
-      items.push({ href: "/admin", label: "Admin", icon: Shield });
+      items.splice(1, 0, { href: "/admin", label: "Users & roles", icon: Shield });
     }
-    items.push({ href: "/customer/messages", label: "Messages", icon: MessageSquare });
+
     return items;
   }, [role]);
 
@@ -55,10 +64,17 @@ export function AppSidebar() {
       <nav className="mt-8 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = pathname === item.href || pathname.startsWith(item.href + "/");
+          const active =
+            item.href === "/admin"
+              ? pathname === "/admin"
+              : item.href === "/customer/dashboard" ||
+                  item.href === "/admin/dashboard" ||
+                  item.href === "/agent/dashboard"
+                ? pathname === item.href
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
             <Link
-              key={item.label}
+              key={`${item.label}-${item.href}`}
               href={item.href}
               className={clsx(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
@@ -75,8 +91,12 @@ export function AppSidebar() {
       </nav>
 
       <div className="mt-4 shrink-0 rounded-xl bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] px-3 py-3">
-        <p className="truncate text-sm font-medium">{session?.user?.name || "User"}</p>
-        <p className="truncate text-xs text-[var(--muted)]">{session?.user?.email}</p>
+        <p className="truncate text-sm font-medium">
+          {session?.user?.name || "User"}
+        </p>
+        <p className="truncate text-xs text-[var(--muted)]">
+          {session?.user?.email}
+        </p>
       </div>
 
       <SidebarFooter />

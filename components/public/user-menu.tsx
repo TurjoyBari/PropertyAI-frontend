@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   CalendarDays,
   Heart,
@@ -12,11 +13,18 @@ import {
   Settings,
   Sun,
   UserRound,
+  Users,
 } from "lucide-react";
 import clsx from "clsx";
 import { signOut } from "@/lib/auth-client";
-import { getRole, homeForRole, roleLabel, type AppRole } from "@/lib/roles";
+import {
+  getRole,
+  menuItemsForRole,
+  roleLabel,
+  type NavMenuItem,
+} from "@/lib/roles";
 import { useThemeStore } from "@/store/theme-store";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export type AuthUser = {
   name?: string | null;
@@ -24,6 +32,15 @@ export type AuthUser = {
   image?: string | null;
   role?: string | null;
 };
+
+const ICONS = {
+  dashboard: LayoutDashboard,
+  profile: UserRound,
+  favorites: Heart,
+  visits: CalendarDays,
+  leads: Users,
+  settings: Settings,
+} as const;
 
 function initialsFromName(name?: string | null, email?: string | null) {
   const source = (name || email || "U").trim();
@@ -48,7 +65,10 @@ export function UserAvatar({
       <img
         src={user.image}
         alt={user.name || "Profile"}
-        className={clsx(dim, "rounded-full object-cover ring-2 ring-[var(--border)]")}
+        className={clsx(
+          dim,
+          "rounded-full object-cover ring-2 ring-[var(--border)]",
+        )}
       />
     );
   }
@@ -75,8 +95,9 @@ export function UserMenu({
   onNavigate?: () => void;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const role = getRole(user);
-  const dashboardHref = homeForRole(role);
+  const items = menuItemsForRole(role);
   const { theme, toggleTheme, hydrate } = useThemeStore();
   const [open, setOpen] = useState(variant === "mobile");
   const [confirmLogout, setConfirmLogout] = useState(false);
@@ -122,66 +143,47 @@ export function UserMenu({
     }
   };
 
-  const menuItems: Array<{
-    href: string;
-    label: string;
-    icon: typeof UserRound;
-  }> = [
-    {
-      href: profileHref(role),
-      label: "My Profile",
-      icon: UserRound,
-    },
-    {
-      href: dashboardHref,
-      label: "Dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      href: "/customer/favorites",
-      label: "Saved Properties",
-      icon: Heart,
-    },
-    {
-      href: "/customer/visits",
-      label: "My Visits",
-      icon: CalendarDays,
-    },
-    {
-      href: settingsHref(role),
-      label: "Settings",
-      icon: Settings,
-    },
-  ];
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`);
 
   const panel = (
     <div
       className={clsx(
-        "overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow)]",
-        variant === "desktop" && "absolute right-0 top-full z-50 mt-2 w-72",
-        variant === "mobile" && "mt-2",
+        "overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[0_20px_50px_rgba(20,32,28,0.12)]",
+        variant === "desktop" && "w-80",
+        variant === "mobile" && "mt-2 w-full",
       )}
     >
-      <div className="flex items-center gap-3 border-b border-[var(--border)] px-4 py-3">
-        <UserAvatar user={user} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{user.name || "User"}</p>
-          <p className="truncate text-xs text-[var(--muted)]">{user.email}</p>
-          <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--accent)]">
-            {roleLabel(role)}
-          </p>
+      <div className="border-b border-[var(--border)] bg-gradient-to-br from-[color-mix(in_oklab,var(--accent)_12%,transparent)] to-transparent px-4 py-4">
+        <div className="flex items-center gap-3">
+          <UserAvatar user={user} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">
+              {user.name || "User"}
+            </p>
+            <p className="truncate text-xs text-[var(--muted)]">{user.email}</p>
+            <p className="mt-1 inline-flex rounded-md bg-[var(--accent-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--accent)]">
+              {roleLabel(role)}
+            </p>
+          </div>
         </div>
       </div>
 
       <div className="p-1.5">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
+        {items.map((item: NavMenuItem) => {
+          const Icon = ICONS[item.icon];
+          const active = isActive(item.href);
           return (
             <Link
-              key={item.label}
+              key={`${item.label}-${item.href}`}
               href={item.href}
               onClick={close}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--muted)] transition hover:bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] hover:text-[var(--foreground)]"
+              className={clsx(
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
+                active
+                  ? "bg-[var(--accent-soft)] text-[var(--accent)]"
+                  : "text-[var(--muted)] hover:bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] hover:text-[var(--foreground)]",
+              )}
             >
               <Icon size={16} />
               {item.label}
@@ -213,66 +215,53 @@ export function UserMenu({
   );
 
   return (
-    <div ref={rootRef} className={clsx("relative", variant === "mobile" && "w-full")}>
+    <div
+      ref={rootRef}
+      className={clsx("relative", variant === "mobile" && "w-full")}
+    >
       {variant === "desktop" ? (
         <button
           type="button"
           aria-haspopup="menu"
           aria-expanded={open}
+          aria-label="Open profile menu"
           onClick={() => setOpen((v) => !v)}
-          className="rounded-full transition hover:opacity-90"
+          className="rounded-full transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
         >
           <UserAvatar user={user} />
         </button>
       ) : null}
 
-      {variant === "desktop" ? (open ? panel : null) : panel}
+      {variant === "desktop" ? (
+        <AnimatePresence>
+          {open ? (
+            <motion.div
+              className="absolute right-0 top-full z-50 mt-2"
+              initial={{ opacity: 0, y: 8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 6, scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 420, damping: 28 }}
+            >
+              {panel}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      ) : (
+        panel
+      )}
 
-      {confirmLogout ? (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="nav-logout-title"
-        >
-          <div className="w-full max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow)]">
-            <h2 id="nav-logout-title" className="text-lg font-semibold">
-              Log out?
-            </h2>
-            <p className="mt-2 text-sm text-[var(--muted)]">
-              You will be signed out and returned to the home page.
-            </p>
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                type="button"
-                className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium"
-                onClick={() => setConfirmLogout(false)}
-                disabled={loggingOut}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="rounded-xl bg-[var(--danger)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-                onClick={onLogout}
-                disabled={loggingOut}
-              >
-                {loggingOut ? "Logging out..." : "Logout"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDialog
+        open={confirmLogout}
+        onOpenChange={setConfirmLogout}
+        title="Logout"
+        description="Are you sure you want to logout?"
+        cancelLabel="Cancel"
+        confirmLabel="Logout"
+        confirmLoadingLabel="Logging out…"
+        tone="danger"
+        loading={loggingOut}
+        onConfirm={onLogout}
+      />
     </div>
   );
-}
-
-function profileHref(role: AppRole) {
-  if (role === "user") return "/customer/settings";
-  return "/account";
-}
-
-function settingsHref(role: AppRole) {
-  if (role === "user") return "/customer/settings";
-  return "/account";
 }

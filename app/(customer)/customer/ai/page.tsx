@@ -1,12 +1,19 @@
-import { AiStudioView } from "@/components/ai/ai-studio-view";
+"use client";
+
+import { AiPropertyFinder } from "@/components/public/ai-property-finder";
+import { CustomerPageHeader } from "@/components/customer/page-header";
+import { PageTransition } from "@/components/customer/page-transition";
 
 export default function CustomerAiPage() {
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-[var(--muted)]">
-        Customer AI Finder — use the Property Matching tab. Lead scoring is for staff only.
-      </p>
-      <AiStudioView />
-    </div>
+    <PageTransition>
+      <div className="space-y-8">
+        <CustomerPageHeader
+          title="AI Property Finder"
+          subtitle="Describe your budget, neighborhood, and lifestyle — we’ll rank verified homes for you."
+        />
+        <AiPropertyFinder compact />
+      </div>
+    </PageTransition>
   );
 }

@@ -13,6 +13,8 @@ import {
   visitPropertyId,
   visitPropertyTitle,
 } from "@/types/visit";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { toast } from "@/store/toast-store";
 
 export default function VisitDetailPage() {
   const params = useParams<{ id: string }>();
@@ -21,6 +23,8 @@ export default function VisitDetailPage() {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -82,12 +86,7 @@ export default function VisitDetailPage() {
           </button>
           <button
             type="button"
-            onClick={async () => {
-              if (!confirm("Cancel and remove this visit?")) return;
-              await deleteVisit(visit._id);
-              router.push("/visits");
-              router.refresh();
-            }}
+            onClick={() => setCancelOpen(true)}
             className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--danger)]"
           >
             Cancel visit
@@ -164,6 +163,32 @@ export default function VisitDetailPage() {
           ) : null}
         </div>
       )}
+
+      <ConfirmDialog
+        open={cancelOpen}
+        onOpenChange={setCancelOpen}
+        title="Cancel Visit"
+        description="Are you sure you want to cancel and remove this visit?"
+        warning="This action cannot be undone."
+        cancelLabel="Keep Visit"
+        confirmLabel="Yes, Cancel Visit"
+        confirmLoadingLabel="Cancelling…"
+        loading={cancelling}
+        onConfirm={async () => {
+          setCancelling(true);
+          try {
+            await deleteVisit(visit._id);
+            setCancelOpen(false);
+            toast("Visit cancelled successfully.");
+            router.push("/visits");
+            router.refresh();
+          } catch (err) {
+            toast(err instanceof Error ? err.message : "Could not cancel visit", "error");
+          } finally {
+            setCancelling(false);
+          }
+        }}
+      />
     </div>
   );
 }

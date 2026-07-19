@@ -4,12 +4,17 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { PropertyForm } from "@/components/properties/property-form";
+import { AdminPropertyEnterprisePanel } from "@/components/properties/admin-property-enterprise-panel";
 import {
   deleteProperty,
   getProperty,
   updateProperty,
 } from "@/services/properties.service";
 import type { Property } from "@/types/property";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { toast } from "@/store/toast-store";
+import { useSession } from "@/lib/auth-client";
+import { canAccessAdmin, getRole } from "@/lib/roles";
 
 function formatMoney(value: number, currency: string) {
   return new Intl.NumberFormat("en-BD", {
@@ -22,10 +27,24 @@ function formatMoney(value: number, currency: string) {
 export default function PropertyDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { data: session } = useSession();
+  const isAdmin = canAccessAdmin(
+    getRole(session?.user as { role?: string | null } | undefined),
+  );
   const [property, setProperty] = useState<Property | null>(null);
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const reloadProperty = () => {
+    getProperty(params.id)
+      .then(setProperty)
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Failed to load property"),
+      );
+  };
 
   useEffect(() => {
     let active = true;
@@ -60,7 +79,7 @@ export default function PropertyDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className={`mx-auto space-y-6 ${isAdmin ? "max-w-6xl" : "max-w-4xl"}`}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <Link href="/properties" className="text-sm text-[var(--accent)] hover:underline">
@@ -81,12 +100,7 @@ export default function PropertyDetailPage() {
           </button>
           <button
             type="button"
-            onClick={async () => {
-              if (!confirm("Delete this property?")) return;
-              await deleteProperty(property._id);
-              router.push("/properties");
-              router.refresh();
-            }}
+            onClick={() => setDeleteOpen(true)}
             className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--danger)]"
           >
             Delete
@@ -163,10 +177,58 @@ export default function PropertyDetailPage() {
                 <dt className="text-[var(--muted)]">Area</dt>
                 <dd>{property.areaSqFt ? `${property.areaSqFt} sqft` : "—"}</dd>
               </div>
+              {property.parking != null ? (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-[var(--muted)]">Parking</dt>
+                  <dd>{property.parking}</dd>
+                </div>
+              ) : null}
+              {property.purpose ? (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-[var(--muted)]">Category</dt>
+                  <dd className="capitalize">{property.purpose}</dd>
+                </div>
+              ) : null}
             </dl>
           </aside>
         </div>
       )}
+
+      {isAdmin ? (
+        <AdminPropertyEnterprisePanel
+          propertyId={property._id}
+          onPropertyChanged={reloadProperty}
+        />
+      ) : null}
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete Property"
+        description="Are you sure you want to delete this property?"
+        warning="This action cannot be undone."
+        cancelLabel="Keep Property"
+        confirmLabel="Yes, Delete Property"
+        confirmLoadingLabel="Deleting…"
+        loading={deleting}
+        onConfirm={async () => {
+          setDeleting(true);
+          try {
+            await deleteProperty(property._id);
+            setDeleteOpen(false);
+            toast("Property deleted successfully.");
+            router.push("/properties");
+            router.refresh();
+          } catch (err) {
+            toast(
+              err instanceof Error ? err.message : "Could not delete property",
+              "error",
+            );
+          } finally {
+            setDeleting(false);
+          }
+        }}
+      />
     </div>
   );
 }

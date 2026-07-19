@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   canAccessAdmin,
+  canAccessAgentHome,
   canAccessCustomerHome,
   canAccessOps,
   homeForRole,
@@ -15,9 +16,11 @@ const opsPrefixes = [
   "/reports",
   "/notifications",
   "/ai",
+  "/messages",
 ];
 const customerPrefixes = ["/customer"];
 const adminPrefixes = ["/admin"];
+const agentPrefixes = ["/agent"];
 const accountPrefixes = ["/account"];
 const authPrefixes = ["/login", "/register", "/forgot-password", "/reset-password"];
 
@@ -28,6 +31,7 @@ const customerPersonalPaths = [
   "/customer/messages",
   "/customer/notifications",
   "/customer/settings",
+  "/customer/profile",
   "/customer/ai",
 ];
 
@@ -62,12 +66,22 @@ export async function middleware(request: NextRequest) {
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
   const isAdmin = adminPrefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const isAgentArea = agentPrefixes.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
   const isAccount = accountPrefixes.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
   const isAuthRoute = authPrefixes.some((p) => pathname.startsWith(p));
 
-  if (!isOps && !isCustomer && !isAdmin && !isAuthRoute && !isAccount) {
+  if (
+    !isOps &&
+    !isCustomer &&
+    !isAdmin &&
+    !isAgentArea &&
+    !isAuthRoute &&
+    !isAccount
+  ) {
     return NextResponse.next();
   }
 
@@ -75,7 +89,10 @@ export async function middleware(request: NextRequest) {
   const isLoggedIn = Boolean(session?.user || session?.session);
   const role = session?.user?.role;
 
-  if ((isOps || isCustomer || isAdmin || isAccount) && !isLoggedIn) {
+  if (
+    (isOps || isCustomer || isAdmin || isAgentArea || isAccount) &&
+    !isLoggedIn
+  ) {
     const loginUrl = new URL("/login", request.url);
     const nextTarget = `${pathname}${request.nextUrl.search}`;
     loginUrl.searchParams.set("next", nextTarget);
@@ -91,6 +108,10 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isAdmin && !canAccessAdmin(role)) {
+    return NextResponse.redirect(new URL("/unauthorized", request.url));
+  }
+
+  if (isAgentArea && !canAccessAgentHome(role)) {
     return NextResponse.redirect(new URL("/unauthorized", request.url));
   }
 
@@ -123,6 +144,10 @@ export const config = {
     "/notifications/:path*",
     "/ai",
     "/ai/:path*",
+    "/messages",
+    "/messages/:path*",
+    "/agent",
+    "/agent/:path*",
     "/customer",
     "/customer/:path*",
     "/admin",

@@ -11,6 +11,8 @@ import {
   updateLead,
 } from "@/services/leads.service";
 import type { Lead } from "@/types/lead";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { toast } from "@/store/toast-store";
 
 export default function LeadDetailPage() {
   const params = useParams<{ id: string }>();
@@ -21,6 +23,8 @@ export default function LeadDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [noteError, setNoteError] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -77,12 +81,7 @@ export default function LeadDetailPage() {
           </button>
           <button
             type="button"
-            onClick={async () => {
-              if (!confirm("Delete this lead?")) return;
-              await deleteLead(lead._id);
-              router.push("/leads");
-              router.refresh();
-            }}
+            onClick={() => setDeleteOpen(true)}
             className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--danger)]"
           >
             Delete
@@ -209,6 +208,32 @@ export default function LeadDetailPage() {
           </section>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete Lead"
+        description="Are you sure you want to delete this lead?"
+        warning="This action cannot be undone."
+        cancelLabel="Keep Lead"
+        confirmLabel="Yes, Delete Lead"
+        confirmLoadingLabel="Deleting…"
+        loading={deleting}
+        onConfirm={async () => {
+          setDeleting(true);
+          try {
+            await deleteLead(lead._id);
+            setDeleteOpen(false);
+            toast("Lead deleted successfully.");
+            router.push("/leads");
+            router.refresh();
+          } catch (err) {
+            toast(err instanceof Error ? err.message : "Could not delete lead", "error");
+          } finally {
+            setDeleting(false);
+          }
+        }}
+      />
     </div>
   );
 }

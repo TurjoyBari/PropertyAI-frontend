@@ -75,9 +75,7 @@ function PublicShellInner({ children }: { children: ReactNode }) {
 
           <div className="flex items-center gap-2">
             {!isPending && user ? (
-              <div className="hidden sm:block">
-                <UserMenu user={user} variant="desktop" />
-              </div>
+              <UserMenu user={user} variant="desktop" />
             ) : !isPending ? (
               <>
                 <Link
@@ -94,7 +92,7 @@ function PublicShellInner({ children }: { children: ReactNode }) {
                 </Link>
               </>
             ) : (
-              <div className="hidden h-9 w-9 animate-pulse rounded-full bg-[var(--border)] sm:block" />
+              <div className="h-9 w-9 animate-pulse rounded-full bg-[var(--border)]" />
             )}
             <button
               type="button"
@@ -126,9 +124,7 @@ function PublicShellInner({ children }: { children: ReactNode }) {
 
               <div className="my-2 border-t border-[var(--border)]" />
 
-              {user ? (
-                <UserMenu user={user} variant="mobile" onNavigate={() => setOpen(false)} />
-              ) : (
+              {!user ? (
                 <div className="flex flex-col gap-2 pt-1">
                   <Link
                     href="/login"
@@ -145,7 +141,7 @@ function PublicShellInner({ children }: { children: ReactNode }) {
                     Sign Up
                   </Link>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         ) : null}

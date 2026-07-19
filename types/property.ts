@@ -46,6 +46,7 @@ export type Property = {
   images: string[];
   amenities: string[];
   listedBy?: string;
+  parking?: number;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -58,6 +59,8 @@ export type PropertyListResponse = {
     limit: number;
     total: number;
     totalPages: number;
+    hasNextPage?: boolean;
+    hasPreviousPage?: boolean;
   };
 };
 

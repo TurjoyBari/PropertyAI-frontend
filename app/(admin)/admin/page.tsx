@@ -28,10 +28,16 @@ export default function AdminHomePage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Link href="/dashboard" className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium">
-            Ops dashboard
+          <Link
+            href="/admin/dashboard"
+            className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium"
+          >
+            Dashboard
           </Link>
-          <Link href="/ai" className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white">
+          <Link
+            href="/ai"
+            className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white"
+          >
             Admin AI
           </Link>
         </div>

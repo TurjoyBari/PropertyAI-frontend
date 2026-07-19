@@ -16,6 +16,7 @@ import {
 } from "@/services/public.service";
 import { useSession } from "@/lib/auth-client";
 import type { Property } from "@/types/property";
+import { trackRecentlyViewed } from "@/lib/recently-viewed";
 
 const field =
   "w-full rounded-xl border border-[var(--border)] bg-transparent px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2";
@@ -49,6 +50,18 @@ export function ListingDetailClient() {
       .then((data) => {
         setProperty(data);
         setActiveImage(0);
+        trackRecentlyViewed({
+          _id: data._id,
+          title: data.title,
+          price: data.price,
+          currency: data.currency,
+          image: propertyImage(data),
+          city: data.location.city,
+          area: data.location.area,
+          bedrooms: data.bedrooms,
+          bathrooms: data.bathrooms,
+          areaSqFt: data.areaSqFt,
+        });
         publicListProperties({
           city: data.location.city,
           type: data.type,

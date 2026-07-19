@@ -35,7 +35,7 @@ export function RegisterForm() {
       name: values.name,
       email: values.email,
       password: values.password,
-      callbackURL: values.accountType === "agent" ? "/dashboard" : "/customer",
+      callbackURL: values.accountType === "agent" ? "/agent/dashboard" : "/customer/dashboard",
     });
 
     if (error) {

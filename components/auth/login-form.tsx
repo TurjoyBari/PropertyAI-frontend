@@ -52,7 +52,7 @@ export function LoginForm() {
   const onGoogle = async () => {
     setFormError(null);
     setGoogleLoading(true);
-    const home = nextPath || "/customer";
+    const home = nextPath || "/customer/dashboard";
     const { error } = await signIn.social({
       provider: "google",
       callbackURL: home,
