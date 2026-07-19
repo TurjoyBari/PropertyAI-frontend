@@ -25,6 +25,7 @@ import {
 } from "@/lib/roles";
 import { useThemeStore } from "@/store/theme-store";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ProfileAvatar } from "@/components/ui/profile-avatar";
 
 export type AuthUser = {
   name?: string | null;
@@ -42,15 +43,6 @@ const ICONS = {
   settings: Settings,
 } as const;
 
-function initialsFromName(name?: string | null, email?: string | null) {
-  const source = (name || email || "U").trim();
-  const parts = source.split(/\s+/).filter(Boolean);
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  }
-  return source.slice(0, 2).toUpperCase();
-}
-
 export function UserAvatar({
   user,
   size = "md",
@@ -58,30 +50,14 @@ export function UserAvatar({
   user: AuthUser;
   size?: "sm" | "md";
 }) {
-  const dim = size === "sm" ? "h-8 w-8 text-xs" : "h-9 w-9 text-sm";
-  if (user.image) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={user.image}
-        alt={user.name || "Profile"}
-        className={clsx(
-          dim,
-          "rounded-full object-cover ring-2 ring-[var(--border)]",
-        )}
-      />
-    );
-  }
   return (
-    <span
-      className={clsx(
-        dim,
-        "inline-flex items-center justify-center rounded-full bg-[var(--accent-soft)] font-semibold text-[var(--accent)] ring-2 ring-[var(--border)]",
-      )}
-      aria-hidden
-    >
-      {initialsFromName(user.name, user.email)}
-    </span>
+    <ProfileAvatar
+      src={user.image}
+      name={user.name}
+      email={user.email}
+      sizeClassName={size === "sm" ? "h-8 w-8 text-xs" : "h-9 w-9 text-sm"}
+      className="ring-2 ring-[var(--border)]"
+    />
   );
 }
 

@@ -6,16 +6,7 @@ import { roleLabel } from "@/lib/roles";
 import { CustomerPageHeader } from "@/components/customer/page-header";
 import { PageTransition } from "@/components/customer/page-transition";
 import { useThemeStore } from "@/store/theme-store";
-
-function avatarInitials(name?: string | null) {
-  if (!name?.trim()) return "U";
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
+import { ProfileAvatar } from "@/components/ui/profile-avatar";
 
 export default function CustomerProfilePage() {
   const { data: session, isPending } = useSession();
@@ -36,14 +27,14 @@ export default function CustomerProfilePage() {
           <div className="bg-gradient-to-br from-[var(--accent)] to-[#134e4a] px-6 py-8 text-white">
             <div className="flex items-center gap-4">
               <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-white/30 bg-white/15">
-                {image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={image} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-2xl font-semibold">
-                    {avatarInitials(user?.name)}
-                  </div>
-                )}
+                <ProfileAvatar
+                  src={image}
+                  name={user?.name}
+                  email={user?.email}
+                  sizeClassName="h-full w-full text-2xl"
+                  roundedClassName="rounded-2xl"
+                  className="bg-transparent text-white"
+                />
               </div>
               <div>
                 <p className="text-sm text-white/75">Signed in as</p>

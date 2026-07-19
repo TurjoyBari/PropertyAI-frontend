@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "@/lib/auth-client";
 import { SidebarFooter } from "@/components/layout/sidebar-footer";
 import { listNotifications } from "@/services/notifications.service";
+import { ProfileAvatar } from "@/components/ui/profile-avatar";
 
 const nav = [
   { href: "/customer/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -32,16 +33,6 @@ const nav = [
   { href: "/customer/profile", label: "Profile", icon: UserRound },
   { href: "/customer/settings", label: "Settings", icon: Settings },
 ];
-
-function avatarInitials(name?: string | null) {
-  if (!name?.trim()) return "U";
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 function CustomerSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -208,14 +199,13 @@ export function CustomerShell({ children }: { children: React.ReactNode }) {
                 href="/customer/profile"
                 className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] py-1.5 pl-1.5 pr-3 transition hover:border-[var(--accent)]"
               >
-                <span className="relative inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-[var(--accent-soft)] text-xs font-semibold text-[var(--accent)]">
-                  {image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={image} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    avatarInitials(session?.user?.name)
-                  )}
-                </span>
+                <ProfileAvatar
+                  src={image}
+                  name={session?.user?.name}
+                  email={session?.user?.email}
+                  sizeClassName="h-8 w-8 text-xs"
+                  roundedClassName="rounded-lg"
+                />
                 <span className="hidden max-w-[8rem] truncate text-sm font-medium sm:inline">
                   {session?.user?.name || "Profile"}
                 </span>

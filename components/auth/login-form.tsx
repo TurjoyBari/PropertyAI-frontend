@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -8,13 +8,27 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginValues } from "@/lib/auth-schemas";
 import { authClient, signIn } from "@/lib/auth-client";
 import { homeForRole } from "@/lib/roles";
+import {
+  GoogleAuthDivider,
+  GoogleSignInButton,
+} from "@/components/auth/google-sign-in-button";
+
+function loginErrorFromQuery(code: string | null) {
+  if (!code) return null;
+  if (code === "account_not_linked") {
+    return "This Google email already has an account. Sign in with email/password once, or try Google again after linking is enabled.";
+  }
+  if (code === "google" || code === "access_denied" || code === "oauth_provider_error") {
+    return "Google sign-in was cancelled or failed. Please try again.";
+  }
+  return "Could not complete sign-in. Please try again.";
+}
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next");
   const [formError, setFormError] = useState<string | null>(null);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   const {
     register,
@@ -24,6 +38,17 @@ export function LoginForm() {
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
+
+  useEffect(() => {
+    // Better Auth may append error=account_not_linked; prefer the most specific code.
+    const codes = searchParams.getAll("error");
+    const preferred =
+      codes.find((c) => c === "account_not_linked") ??
+      codes.find((c) => c === "google") ??
+      codes[0] ??
+      null;
+    setFormError(loginErrorFromQuery(preferred));
+  }, [searchParams]);
 
   const resolveHome = async () => {
     if (nextPath) return nextPath;
@@ -48,23 +73,6 @@ export function LoginForm() {
     router.push(home);
     router.refresh();
   });
-
-  const onGoogle = async () => {
-    setFormError(null);
-    setGoogleLoading(true);
-    const home = nextPath || "/customer/dashboard";
-    const { error } = await signIn.social({
-      provider: "google",
-      callbackURL: home,
-    });
-    if (error) {
-      setFormError(
-        error.message ||
-          "Google login is not configured. Add GOOGLE_CLIENT_ID/SECRET on the backend.",
-      );
-      setGoogleLoading(false);
-    }
-  };
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -122,14 +130,12 @@ export function LoginForm() {
         {isSubmitting ? "Signing in..." : "Sign in"}
       </button>
 
-      <button
-        type="button"
-        onClick={onGoogle}
-        disabled={googleLoading}
-        className="w-full rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-medium transition hover:bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] disabled:opacity-60"
-      >
-        {googleLoading ? "Redirecting..." : "Continue with Google"}
-      </button>
+      <GoogleAuthDivider />
+
+      <GoogleSignInButton
+        disabled={isSubmitting}
+        onError={(message) => setFormError(message || null)}
+      />
 
       <p className="pt-2 text-center text-sm text-[var(--muted)]">
         No account?{" "}

@@ -8,6 +8,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterValues } from "@/lib/auth-schemas";
 import { authClient, signIn, signUp } from "@/lib/auth-client";
 import { homeForRole } from "@/lib/roles";
+import {
+  GoogleAuthDivider,
+  GoogleSignInButton,
+} from "@/components/auth/google-sign-in-button";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -103,7 +107,8 @@ export function RegisterForm() {
           <p className="text-xs text-[var(--danger)]">{errors.accountType.message}</p>
         ) : null}
         <p className="text-xs text-[var(--muted)]">
-          Customer browses & books visits. Agent manages leads and listings. Admin is assigned later.
+          Email signup can choose Customer or Agent. Google always starts as Customer;
+          only an admin can promote roles later.
         </p>
       </div>
 
@@ -178,6 +183,13 @@ export function RegisterForm() {
       >
         {isSubmitting ? "Creating account..." : "Create account"}
       </button>
+
+      <GoogleAuthDivider />
+
+      <GoogleSignInButton
+        disabled={isSubmitting}
+        onError={(message) => setFormError(message || null)}
+      />
 
       <p className="pt-2 text-center text-sm text-[var(--muted)]">
         Already have an account?{" "}

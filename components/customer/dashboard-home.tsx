@@ -24,6 +24,7 @@ import { CustomerPropertyCard } from "@/components/customer/customer-property-ca
 import { QuickActionCard } from "@/components/customer/quick-action-card";
 import { PageTransition } from "@/components/customer/page-transition";
 import { PropertyCardSkeleton, Skeleton } from "@/components/customer/skeleton";
+import { ProfileAvatar } from "@/components/ui/profile-avatar";
 import {
   VISIT_STATUS_LABELS,
   type Visit,
@@ -34,16 +35,6 @@ import type { FavoriteItem } from "@/services/favorites.service";
 import type { AppNotification } from "@/types/notification";
 import type { MatchPropertyResult } from "@/types/ai";
 import type { Property } from "@/types/property";
-
-function avatarInitials(name?: string | null) {
-  if (!name?.trim()) return "U";
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 function StatChip({
   label,
@@ -154,14 +145,14 @@ export function CustomerDashboardHome() {
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
               <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-white/30 bg-white/15 shadow-lg">
-                {image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={image} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-xl font-semibold">
-                    {avatarInitials(name)}
-                  </div>
-                )}
+                <ProfileAvatar
+                  src={image}
+                  name={name}
+                  email={session?.user?.email}
+                  sizeClassName="h-full w-full text-xl"
+                  roundedClassName="rounded-2xl"
+                  className="bg-transparent text-white"
+                />
               </div>
               <div>
                 <p className="text-sm text-white/80">Welcome back</p>
